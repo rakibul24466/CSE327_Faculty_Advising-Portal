@@ -47,16 +47,6 @@ import os
 def login_page(request):
         a = pd.read_csv("static/class_slots.csv")
         print(type(a))
-        a = a.values.tolist()
-
-        print(type(a))
-        print(tuple(a))
-        print()
-        print()
-        print()
-        print()
-        print()
-        print(a[2][1])
         # for i in a:
         #     print(i)
         # print(class_schedule_tuple)
