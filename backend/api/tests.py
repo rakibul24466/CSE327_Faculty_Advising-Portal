@@ -1,43 +1,27 @@
 
-from django.contrib.auth import get_user_model
+from django.contrib.auth.models import User
+from django.urls import reverse
 from django.test import TestCase
+from rest_framework.test import APITestCase
+from rest_framework.authtoken.models  import Token
+from rest_framework  import status
 
 
-class UsersManagersTests(TestCase):
 
-    def test_create_user(self):
-        User = get_user_model()
-        user = User.objects.create_user(email="normal@user.com", password="foo")
-        self.assertEqual(user.email, "normal@user.com")
-        self.assertTrue(user.is_active)
-        self.assertFalse(user.is_staff)
-        self.assertFalse(user.is_superuser)
-        try:
-            # username is None for the AbstractUser option
-            # username does not exist for the AbstractBaseUser option
-            self.assertIsNone(user.username)
-        except AttributeError:
-            pass
-        with self.assertRaises(TypeError):
-            User.objects.create_user()
-        with self.assertRaises(TypeError):
-            User.objects.create_user(email="")
-        with self.assertRaises(ValueError):
-            User.objects.create_user(email="", password="foo")
-
-    def test_create_superuser(self):
-        User = get_user_model()
-        admin_user = User.objects.create_superuser(email="super@user.com", password="foo")
-        self.assertEqual(admin_user.email, "super@user.com")
-        self.assertTrue(admin_user.is_active)
-        self.assertTrue(admin_user.is_staff)
-        self.assertTrue(admin_user.is_superuser)
-        try:
-            # username is None for the AbstractUser option
-            # username does not exist for the AbstractBaseUser option
-            self.assertIsNone(admin_user.username)
-        except AttributeError:
-            pass
-        with self.assertRaises(ValueError):
-            User.objects.create_superuser(
-                email="super@user.com", password="foo", is_superuser=False)
+class LoginLogoutTestCase(APITestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(username="example",password="newpassword@123")
+        
+    def test_login(self):
+        data = {
+            "username" : "example",
+            # "password" : "newpassword@123"
+            "password" : "newpassword"
+        }
+        response = self.client.post(reverse('login'),data)
+        self.assertEqual(response.status_code,status.HTTP_200_OK)
+    def logout_test(self):
+        self.token = Token.objects.get(user__username="example")
+        self.client.credentials(HTTP_AUTHORIZATION="Token "+self.token.key)
+        response = self.client.post(reverse('logout'))
+        self.assertEqual(response.status_code,status.HTTP_200_OK)

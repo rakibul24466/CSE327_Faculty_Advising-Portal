@@ -16,6 +16,12 @@ DAYS_OF_WEEK = (
     (7, 'Sunday'),
 )
 
+BUILDING =(
+    (1,"SAC"),
+    (2,"NAC"),
+    (3,"LIB"),
+    (4,"ADMIN")
+)
 
 #using nsu class schedule
 from api import ScheduleNSU
@@ -61,9 +67,9 @@ class Educator(models.Model):
         
 class Faculty(Educator):
     total_credit = models.FloatField(_("Number of credit taken"),default=0)
-    # user = models.OneToOneField(User, verbose_name=_("User authenticaiton profile"), on_delete=models.CASCADE)
+    user = models.OneToOneField(User, verbose_name=_("User authenticaiton profile"), on_delete=models.CASCADE)
     def save(self, *args, **kwargs):
-        # self.user.is_staff = False
+        self.user.is_staff = False
         super(Faculty, self).save(*args, **kwargs) # Call the real save() method
     
     class Meta:
@@ -71,7 +77,7 @@ class Faculty(Educator):
         verbose_name_plural = _("Faculties")
 
     def __str__(self):
-        return super().name
+        return self.initial
 
     def get_absolute_url(self):
         return reverse("Faculty_detail", kwargs={"pk": self.pk})
@@ -157,7 +163,7 @@ class CourseTaken(models.Model):
 
 
 class Classroom(models.Model):
-    building = models.CharField(_("academic building abbbrebiation"), max_length=5)
+    building = models.IntegerField(_("academic building abbbrebiation"),choices=BUILDING)
     roomNo= models.PositiveIntegerField(_("classroom number"),primary_key=True)
     seat = models.PositiveIntegerField(_("Available seat for students"))
     details = models.CharField(_("Classroom details e.g. projector,computer et"), max_length=150)
