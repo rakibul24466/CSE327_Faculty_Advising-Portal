@@ -87,7 +87,7 @@ class Faculty(Educator):
 
 class Course(models.Model):
     name =  models.CharField(max_length=100)
-    code = models.CharField(_("course Code"),max_length=10)
+    code = models.CharField(_("course Code"),max_length=10,unique=True)
     credit = models.FloatField(_("Course Credit"))
     type = models.CharField(_("Course Type e.g. lab,theory "),choices=COURSE_TYPE, blank=True,max_length=10)    
     number_of_section = models.IntegerField(_("Total number of Section "),default=0)
@@ -106,7 +106,7 @@ class Course(models.Model):
            Section(no=i,course=self).save()
            
     def __str__(self):
-        return self.code+" "+str(self.type)
+        return self.code+" ("+str(self.type)+") "
 
     def get_absolute_url(self):
         return reverse("Course_detail", kwargs={"pk": self.pk})
