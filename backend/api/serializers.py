@@ -2,16 +2,7 @@ from rest_framework import serializers
 from django.contrib.auth.models import User
 from . import models
 
-class CommentSerializer(serializers.Serializer):
-    email = serializers.EmailField()
-    content = serializers.CharField(max_length=200)
-    created = serializers.DateTimeField()
-    
 
-class EmailSerializer(serializers.Serializer):
-    mail = serializers.EmailField()
-    created = serializers.DateTimeField()
-    
 
 class AuthUserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -58,3 +49,9 @@ class FacultyRegistrationSerializer(serializers.ModelSerializer):
         user.save()
         faculty.save()
         return faculty
+    
+class CourseSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = models.Course
+        fields = '__all__'
