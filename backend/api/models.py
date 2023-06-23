@@ -1,3 +1,4 @@
+from django.contrib.auth.models import User
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 from django.urls import reverse
@@ -15,6 +16,12 @@ DAYS_OF_WEEK = (
     (7, 'Sunday'),
 )
 
+BUILDING =(
+    (1,"SAC"),
+    (2,"NAC"),
+    (3,"LIB"),
+    (4,"ADMIN")
+)
 
 #using nsu class schedule
 from api import ScheduleNSU
@@ -31,6 +38,11 @@ COURSE_TYPE  = (("","Theory"),
 #         else:
 #             return credit
         
+
+
+
+
+
 class Educator(models.Model):
     name = models.CharField(_("Name "), max_length=50)
     initial = models.CharField(_("Short initial  "), max_length=50)
@@ -42,34 +54,35 @@ class Educator(models.Model):
     
 
     class Meta:
-        verbose_name = _("Person")
-        verbose_name_plural = _("Persons")
+        verbose_name = _("Educator")
+        verbose_name_plural = _("Educators")
 
     def __str__(self):
         return self.name
 
     def get_absolute_url(self):
-        return reverse("Person_detail", kwargs={"pk": self.pk})
+        return reverse("Educator_detail", kwargs={"pk": self.pk})
 
 
         
 class Faculty(Educator):
-    total_credit = models.FloatField(_("Number of credit taken"))
-    
+    total_credit = models.FloatField(_("Number of credit taken"),default=0)
+    user = models.OneToOneField(User, verbose_name=_("User authenticaiton profile"), on_delete=models.CASCADE)
+   
+   
     def save(self, *args, **kwargs):
-       super(Faculty, self).save(*args, **kwargs) # Call the real save() method
+        self.user.is_staff = False
+        super(Faculty, self).save(*args, **kwargs) # Call the real save() method
     
     class Meta:
         verbose_name = _("Faculty")
         verbose_name_plural = _("Faculties")
 
     def __str__(self):
-        return super().name
+        return self.initial
 
     def get_absolute_url(self):
         return reverse("Faculty_detail", kwargs={"pk": self.pk})
-
-
 
 
 class Course(models.Model):
@@ -77,25 +90,29 @@ class Course(models.Model):
     code = models.CharField(_("course Code"),max_length=10)
     credit = models.FloatField(_("Course Credit"))
     type = models.CharField(_("Course Type e.g. lab,theory "),choices=COURSE_TYPE, blank=True,max_length=10)    
-    number_of_section = models.IntegerField(_("Total number of Section "))
+    number_of_section = models.IntegerField(_("Total number of Section "),default=0)
     
     class Meta:
         verbose_name = _("Course")
         verbose_name_plural = _("Courses")
 
     def save(self, *args, **kwargs):
+       if self.id is not None:
+           c = Course.objects.get(pk=self.id)
+           if c.number_of_section > self.number_of_section:
+               raise ValidationError(" Section number cannot be reduced at the moment.")
        super(Course, self).save(*args, **kwargs) # Call the real save() method
        for i in range(1,self.number_of_section+1):
-           Section(no=i,course=self)
+           Section(no=i,course=self).save()
            
     def __str__(self):
-        return self.name+" "+str(self.type)
+        return self.code+" "+str(self.type)
 
     def get_absolute_url(self):
         return reverse("Course_detail", kwargs={"pk": self.pk})
 
 class Section(models.Model):
-    no = models.IntegerField(_("Section no"))
+    no = models.IntegerField(_("Section no"),unique=True,primary_key=True)
     course = models.ForeignKey("Course", verbose_name=_("Course Name"), on_delete=models.CASCADE)
 
     class Meta:
@@ -109,20 +126,25 @@ class Section(models.Model):
         return reverse("Section_detail", kwargs={"pk": self.pk})
 
 class CourseTaken(models.Model):
-    classroom = models.ForeignKey("Classroom", verbose_name=_("Classroom"), on_delete=models.CASCADE)
-    section  = models.ForeignKey("Course", verbose_name=_("Course Section"), on_delete=models.CASCADE)
-    class_slot  = models.ForeignKey("ClassSlot", verbose_name=_("Class slot"), on_delete=models.CASCADE)
-    faculty = models.ForeignKey("Faculty", verbose_name=_("Faculty Name"), on_delete=models.CASCADE)
+    classroom = models.OneToOneField("Classroom", verbose_name=_("Classroom"), on_delete=models.CASCADE)
+    section  = models.OneToOneField("Course", verbose_name=_("Course Section"), on_delete=models.CASCADE)
+    class_slot  = models.OneToOneField("ClassSlot", verbose_name=_("Class slot"), on_delete=models.CASCADE)
+    faculty = models.OneToOneField("Educator", verbose_name=_("Faculty Name"), on_delete=models.CASCADE)
 
     def save(self, *args, **kwargs):
        f = self.faculty
        if f is None:
            #if faculty not available
            pass
+       
        else:
-           f.total_credit = f.total_credit + self.section.credit
-           if f.total_credit >11:
-               raise ValidationError(str(self.faculty)+" cannot take more than 11 credit")
+           #checking whether it is a faculty to make sure the total credit must not cross 11
+           if type(f).__name__ == "Faculty":
+            f.total_credit = f.total_credit + self.section.credit
+            if f.total_credit >11:
+                raise ValidationError(str(self.faculty)+" cannot take more than 11 credit")
+           
+           #checking that class slot must not overlap
            c = self.class_slot
            if c.available is False:
                raise ValidationError(str(c)+" is already Booked at "+str(ScheduleNSU.class_schedule_tuple[c.slot-1]))
@@ -143,7 +165,7 @@ class CourseTaken(models.Model):
 
 
 class Classroom(models.Model):
-    building = models.CharField(_("academic building abbbrebiation"), max_length=5)
+    building = models.IntegerField(_("academic building abbbrebiation"),choices=BUILDING)
     roomNo= models.PositiveIntegerField(_("classroom number"),primary_key=True)
     seat = models.PositiveIntegerField(_("Available seat for students"))
     details = models.CharField(_("Classroom details e.g. projector,computer et"), max_length=150)

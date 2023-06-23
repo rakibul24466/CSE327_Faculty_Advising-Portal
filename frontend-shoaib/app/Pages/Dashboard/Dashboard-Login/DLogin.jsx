@@ -1,7 +1,7 @@
 "use client";
 import React from "react";
 import { useState } from "react";
-import Image from 'next/image'
+import Image from "next/image";
 import { Radio } from "antd";
 import banner2 from "./banner.png";
 import admin2 from "../../../img/admin.jpg";
@@ -12,15 +12,18 @@ import { University } from "../Main-Dashboard/AllPages/backend";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { Drawer } from "antd";
+
+import axios from "axios";
+
 const notify = (text) => toast(text);
 University.addAll();
 const faculties = University.faculties;
 const admins = University.admins;
-export let faculty ="";
+export let faculty = "";
 export let admin = "";
 const DLogin = () => {
   const [open, setOpen] = useState(false);
-   
+
   const showDrawer = () => {
     setOpen(true);
   };
@@ -36,7 +39,6 @@ const DLogin = () => {
     ID: "",
     password: "",
   });
- 
 
   const Handlechange = (e) => {
     setFormvalue({ ...formvalue, [e.target.name]: e.target.value });
@@ -53,6 +55,18 @@ const DLogin = () => {
           docID: formvalue.ID,
         };
         console.log(data);
+        axios
+          .post("http://127.0.0.1:8000/login", {
+            username: "saeem",
+            password: "123",
+          })
+          .then(function (response) {
+            console.log(response.data["token"]);
+          })
+          .catch(function (error) {
+            console.log(error);
+          });
+
         /*dispatch(FacultyLogin(data)).then((res) => {
           if (res.message === "Successful") {
             notify("Login Successful");
@@ -71,18 +85,17 @@ const DLogin = () => {
             notify("Something went Wrong, Please Try Again");
           }
         });*/
-        const user =  faculties.find((e)=>e.id==formvalue.ID);
-        if(user && user.password==formvalue.password){
-        notify("Login Successful");
-        faculty=user;
-        return navigate("/facultyprofile"); 
-      } else  {
-        setLoading(false);
+        const user = faculties.find((e) => e.id == formvalue.ID);
+        if (user && user.password == formvalue.password) {
+          notify("Login Successful");
+          faculty = user;
+          return navigate("/facultyprofile");
+        } else {
+          setLoading(false);
 
-        notify("Something went Wrong, Please Try Again");
-      }
-    }
-     else if (placement === "Admin") {
+          notify("Something went Wrong, Please Try Again");
+        }
+      } else if (placement === "Admin") {
         let data = {
           ...formvalue,
           adminID: formvalue.ID,
@@ -105,14 +118,14 @@ const DLogin = () => {
             notify("Something went Wrong, Please Try Again");
           }
         });*/
-        const user =  admins.find((e)=>e.id==formvalue.ID);
-        if(user && user.password==formvalue.password){
+        const user = admins.find((e) => e.id == formvalue.ID);
+        if (user && user.password == formvalue.password) {
           notify("Login Successful");
-          admin=user;
-          return navigate("/dashboard"); 
-        } else  {
+          admin = user;
+          return navigate("/dashboard");
+        } else {
           setLoading(false);
-  
+
           notify("Something went Wrong, Please Try Again");
         }
       }
@@ -139,7 +152,6 @@ const DLogin = () => {
       return notify("Please Fill all Details");
     }
     setforgetLoading(true);
-  
   };
 
   return (
@@ -148,7 +160,7 @@ const DLogin = () => {
 
       <div className="mainLoginPage">
         <div className="leftside">
-        {/*<Image src={banner} alt="banner" />*/}
+          {/*<Image src={banner} alt="banner" />*/}
         </div>
         <div className="rightside">
           <h1>Login</h1>
@@ -167,7 +179,7 @@ const DLogin = () => {
             </Radio.Group>
           </div>
           <div className="Profileimg">
-            <Image src={admin2}   height="35px" alt="profile" />
+            <Image src={admin2} height="35px" alt="profile" />
           </div>
           <div>
             <p>ID - 100</p>
