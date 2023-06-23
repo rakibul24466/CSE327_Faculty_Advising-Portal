@@ -17,10 +17,10 @@ DAYS_OF_WEEK = (
 )
 
 BUILDING =(
-    (1,"SAC"),
-    (2,"NAC"),
-    (3,"LIB"),
-    (4,"ADMIN")
+    ("SAC","South Academic Buidling"),
+    ("NAC","North Academic Buidling"),
+    ("LIB","Library Building"),
+    ("ADMIN","Admin Building")
 )
 
 #using nsu class schedule
@@ -165,17 +165,18 @@ class CourseTaken(models.Model):
 
 
 class Classroom(models.Model):
-    building = models.IntegerField(_("academic building abbbrebiation"),choices=BUILDING)
+    building = models.CharField(_("academic building abbbrebiation"),max_length=10, choices=BUILDING)
     roomNo= models.PositiveIntegerField(_("classroom number"),primary_key=True)
     seat = models.PositiveIntegerField(_("Available seat for students"))
     details = models.CharField(_("Classroom details e.g. projector,computer et"), max_length=150)
+    
     
     class Meta:
         verbose_name = _("Classroom")
         verbose_name_plural = _("Classrooms")
 
     def __str__(self):
-        return self.building+str(self.roomNo)
+        return self.building+" - "+str(self.roomNo)
 
     def get_absolute_url(self):
         return reverse("Classroom_detail", kwargs={"pk": self.pk})
