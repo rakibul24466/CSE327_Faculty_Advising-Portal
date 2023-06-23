@@ -1,0 +1,219 @@
+.firstBox {
+  background-color: white;
+  border-radius: 2rem;
+  width: 40%;
+}
+
+.maindoctorProfile {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+
+.singleitemdiv {
+  display: flex;
+  justify-content: left;
+  gap: 20px;
+  padding: 10px;
+  font-size: 1.3rem;
+  /* border: 1px solid red; */
+  align-items: center;
+  margin: 0rem 1rem;
+}
+
+.singleitemdiv:nth-child(even) .singledivicons {
+  color: #ff6f6f;
+}
+
+.singleitemdiv:nth-child(odd) .singledivicons {
+  color: rgb(123 219 130);
+}
+
+
+@media only screen and (max-width: 900px) {
+  .patientBox {
+    width: 60%;
+    border: 2px solid;
+  }
+
+  .Payment_Page {
+    /* border: 1px solid blue; */
+    width: 30%;
+  }
+}
+
+
+.patientBox tbody:hover{
+  border-color: red;
+}
+.Icons {
+  font-size: 2rem;
+  cursor: pointer;
+  color: rgb(74, 70, 70);
+}
+
+.firstBox div {
+  display: flex;
+  padding: 1rem;
+}
+.firstBox div img {
+  width: 50%;
+  margin: auto;
+  border-radius: 10rem;
+  background-color: #efefef;
+}
+
+.subfirstbox {
+  background-color: white;
+  border-radius: 2rem;
+  height: 45%;
+}
+.subSecondBox {
+  background-color: white;
+  border-radius: 2rem;
+  height: 45%;
+}
+
+.singleitemdiv button {
+  width: 50%;
+  margin: auto;
+  font-size: 1.5rem;
+  padding: 10px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  gap: 1rem;
+  box-shadow: 0px 0px 3px -1px #4f33ea;
+  background-color: #84adea;
+  text-align: center;
+}
+
+
+.SecondBox {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+@media only screen and (max-width: 1024px) {
+  .maindoctorProfile {
+    display: block;
+  }
+  .firstBox {
+    width: 100%;
+    margin-bottom: 4rem;
+  }
+
+  .SecondBox {
+    gap: 3rem;
+  }
+  .firstBox div img {
+    width: 40%;
+    margin: auto;
+    border-radius: 10rem;
+    background-color: #efefef;
+  }
+  .singleitemdiv button {
+    width: 50%;
+  }
+}
+
+@media only screen and (max-width: 500px) {
+  .singleitemdiv button {
+    width: 70%;
+  }
+}
+/**************************/
+.mainAmbupance {
+  padding: 2rem;
+  border-radius: 10px;
+  box-shadow: 0px 1px 11px 2px #0000001f;
+}
+
+.mainAmbupance h1 {
+  font-size: 2.5rem;
+}
+
+.imagesection {
+  width: 100%;
+  display: flex;
+  justify-content: space-evenly;
+  align-items: center;
+  margin: 3rem 0rem;
+}
+
+.imagesection img {
+  width: 20%;
+  cursor: pointer;
+  border: 1px solid;
+  height: 10rem;
+  padding: 13px;
+  border-radius: 10px;
+  background-color: #c3c7ff75;
+  border: none;
+  box-shadow: 0px 0px 7px -3px black;
+  transition: 0.3s;
+}
+
+.imagesection img:hover {
+  width: 22%;
+}
+
+.mainAmbupance h1 {
+  text-align: center;
+  margin: 2rem 0rem;
+}
+
+/* ***************************************************************** */
+
+table {
+  font-family: arial, sans-serif;
+  border-collapse: collapse;
+  width: 100%;
+}
+
+td,
+th {
+  border: 1px solid #dddddd;
+  text-align: center;
+  padding: 8px;
+  width: 100%;
+
+
+}
+.closed {
+  height: 100px;
+}
+.opend {
+  height: 60px;
+ }
+
+
+tr:nth-child(even) {
+  background-color: #dddddd92;
+}
+
+/* ***************************************************************** */
+
+@media only screen and (max-width: 1024px) {
+  .imagesection img {
+    width: 30%;
+  }
+}
+
+@media only screen and (max-width: 850px) {
+  .imagesection {
+    width: 100%;
+    display: inline-block;
+    gap: 10px;
+  }
+
+  .imagesection img {
+    width: 30%;
+    height: 6rem;
+    margin: 5px;
+  }
+}
+

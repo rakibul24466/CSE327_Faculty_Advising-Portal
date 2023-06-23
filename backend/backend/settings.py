@@ -27,6 +27,10 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
+CORS_ORIGIN_WHITELIST = [
+    'http://localhost:3000',  # Add your frontend URL here
+]
+
 CSRF_TRUSTED_ORIGINS = ['http://127.0.0.1:8000','http://*.127.0.0.1:8000','http://*.127.0.0.1','https://*.127.0.0.1:8000','https://*.127.0.0.1']
 
 # Application definition
@@ -42,6 +46,7 @@ INSTALLED_APPS = [
     'api',
     'rest_framework',
     'rest_framework.authtoken',
+    'corsheaders',
 ]
 
 MIDDLEWARE = [
@@ -52,6 +57,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+      'corsheaders.middleware.CorsMiddleware',
 
 ]
 
@@ -171,3 +177,4 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # Static files (CSS, JavaScript, Images)
 STATIC_URL = '/static/'
 # https://docs.djangoproject.com/en/4.1/howto/static-files/
+CORS_ORIGIN_ALLOW_ALL = True
