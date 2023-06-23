@@ -118,17 +118,6 @@ class LoginView(APIView):
         else:
             return Response({'error': 'Invalid username or password'})
     
-    def get(self, request):
-        username = request.data['username']
-        password = request.data['password']
-        print(request.data)   
-        # user = authenticate(username=username, password=password)
-        # if user is not None:
-        #     token = Token.objects.create(user=user)
-        #     return Response({'token': token.key})
-        # else:
-        return Response({'error': 'Invalid username or password'})
-
 class LogoutView(APIView):
     authentication_classes = (authentication.TokenAuthentication,)
     permission_classes = [permissions.IsAuthenticated]

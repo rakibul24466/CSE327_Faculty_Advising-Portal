@@ -68,6 +68,8 @@ class Educator(models.Model):
 class Faculty(Educator):
     total_credit = models.FloatField(_("Number of credit taken"),default=0)
     user = models.OneToOneField(User, verbose_name=_("User authenticaiton profile"), on_delete=models.CASCADE)
+   
+   
     def save(self, *args, **kwargs):
         self.user.is_staff = False
         super(Faculty, self).save(*args, **kwargs) # Call the real save() method
