@@ -4,4 +4,4 @@
 # python manage.py makemigrations
 # python manage.py migrate
 
-# pip install djangorestframework mysqlclient
+# pip install djangorestframework mysql mysqlclient django-cors-headers pandas 
