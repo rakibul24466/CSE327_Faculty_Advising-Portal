@@ -9,7 +9,18 @@ class AuthUserSerializer(serializers.ModelSerializer):
         model = User
         fields = ['email','password']
         
-        
+
+class FacultySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Faculty
+        fields = '__all__'
+
+class ClassroomSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Classroom
+        fields = '__all__'
+
+
 
 class RegistrationSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
