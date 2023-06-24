@@ -214,6 +214,7 @@ class GetAllClassroomAPIView(APIView):
     #get all classroom using GET request
     def get(self, request):
         try:
+            #Gets all the available classroom 
             if "status" in request.data:
                 status = False
                 if request.data['status'] == "available":
@@ -223,6 +224,7 @@ class GetAllClassroomAPIView(APIView):
                 classroom = models.Classroom.objects.filter(pk__in=classroom)
                 serializer = serializers.ClassroomSerializer(classroom,many=True)
                 return Response( serializer.data)
+            #Gets all the classroom , whether it is available or not does not matter
             else:
                 classroom = models.Classroom.objects.all()
                 serializer = serializers.ClassroomSerializer(classroom,many=True)
@@ -233,14 +235,22 @@ class GetAllClassroomAPIView(APIView):
     ##get classroom by classroom no and building intial using POST request   
     def post(self, request):
         building= request.data['building']
-        room_no= request.data['roomNo']
+        room_no = request.data['roomNo']
+        classroom = None
         try:
+            available = False
+            time_slot = None
             classroom = models.Classroom.objects.get(building=building,roomNo=room_no)
-            time_slot = models.ClassSlot.objects.get(classroom=classroom)
+            if "status" in request.data:
+                if request.data['status'] == "Available":
+                    available = True
+                time_slot = models.ClassSlot.objects.filter(classroom=classroom,available=available)
+            else:
+                time_slot = models.ClassSlot.objects.filter(classroom=classroom)
             
-            serializer = serializers.ClassroomSerializer(classroom )
+            serializer = serializers.ClassSlotSerializer(time_slot,many=True)
             return Response( serializer.data)
         except models.Classroom.DoesNotExist:
-            return Response({'message': str(classroom )+' has not been taking course this semester'})
+            return Response({'message': 'Classroom not found'})
     
 
