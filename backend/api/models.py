@@ -29,6 +29,15 @@ from api import ScheduleNSU
 COURSE_TYPE  = (("","Theory"),
                 ("L","Lab/Practical"))
 
+FACULTY_DESIGNATIONS = [
+    "Junior Lecturer",
+    "Lecturer",
+    "Senior Lecturer",
+    "Assistant Professor",
+    "Associate Professor",
+    "Professor",
+]
+
 # Create your models here.
 
 # # Custom validator function for credit
@@ -43,7 +52,33 @@ COURSE_TYPE  = (("","Theory"),
 
 
 
-class Educator(models.Model):
+# class Educator(models.Model):
+#     name = models.CharField(_("Name "), max_length=50)
+#     initial = models.CharField(_("Short initial  "), max_length=50)
+#     designation = models.CharField(_("Designation "), max_length=50,blank=True)
+#     email = models.EmailField(_("Email"), max_length=254,blank=True)
+#     ext = models.IntegerField(_("Phone extention number"),blank=True,default=0)
+#     room = models.IntegerField(_("Room Number"),blank=True,default=0)
+#     mobile = models.CharField(_("Mobile Number"), max_length=50,blank=True)
+    
+
+#     class Meta:
+#         verbose_name = _("Educator")
+#         verbose_name_plural = _("Educators")
+
+#     def save(self, *args, **kwargs):
+#       self.designation = FACULTY_DESIGNATIONS[0]
+#       super(Educator, self).save(*args, **kwargs) # Call the real save() method
+    
+#     def __str__(self):
+#         return self.name
+
+#     def get_absolute_url(self):
+#         return reverse("Educator_detail", kwargs={"pk": self.pk})
+
+
+        
+class Faculty(models.Model):
     name = models.CharField(_("Name "), max_length=50)
     initial = models.CharField(_("Short initial  "), max_length=50)
     designation = models.CharField(_("Designation "), max_length=50,blank=True)
@@ -51,29 +86,20 @@ class Educator(models.Model):
     ext = models.IntegerField(_("Phone extention number"),blank=True,default=0)
     room = models.IntegerField(_("Room Number"),blank=True,default=0)
     mobile = models.CharField(_("Mobile Number"), max_length=50,blank=True)
-    
-
-    class Meta:
-        verbose_name = _("Educator")
-        verbose_name_plural = _("Educators")
-
-    def __str__(self):
-        return self.name
-
-    def get_absolute_url(self):
-        return reverse("Educator_detail", kwargs={"pk": self.pk})
-
-
-        
-class Faculty(Educator):
     total_credit = models.FloatField(_("Number of credit taken"),default=0)
     user = models.OneToOneField(User, verbose_name=_("User authenticaiton profile"), on_delete=models.CASCADE)
-   
+    
    
     def save(self, *args, **kwargs):
         self.user.is_staff = False
+        self.user.groups.add(1)
+        self.user.first_name = self.name.split(' ')[0]
+        self.user.last_name= self.name.split(' ')[1]
+        self.user.email = self.email
+        if len(self.designation)==0:
+            self.designation = FACULTY_DESIGNATIONS[0]
         super(Faculty, self).save(*args, **kwargs) # Call the real save() method
-    
+
     class Meta:
         verbose_name = _("Faculty")
         verbose_name_plural = _("Faculties")
@@ -83,6 +109,7 @@ class Faculty(Educator):
 
     def get_absolute_url(self):
         return reverse("Faculty_detail", kwargs={"pk": self.pk})
+
 
 
 class Course(models.Model):
@@ -129,7 +156,7 @@ class CourseTaken(models.Model):
     classroom = models.OneToOneField("Classroom", verbose_name=_("Classroom"), on_delete=models.CASCADE)
     section  = models.OneToOneField("Course", verbose_name=_("Course Section"), on_delete=models.CASCADE)
     class_slot  = models.OneToOneField("ClassSlot", verbose_name=_("Class slot"), on_delete=models.CASCADE)
-    faculty = models.OneToOneField("Educator", verbose_name=_("Faculty Name"), on_delete=models.CASCADE)
+    faculty = models.OneToOneField("Faculty", verbose_name=_("Faculty Name"), on_delete=models.CASCADE)
 
     def save(self, *args, **kwargs):
        f = self.faculty

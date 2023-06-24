@@ -4,7 +4,7 @@ from  api import models
 admin.site.register(models.Classroom)
 admin.site.register(models.CourseTaken)
 admin.site.register(models.ClassSlot)
-admin.site.register(models.Educator)
+# admin.site.register(models.Educator)
 admin.site.register(models.Faculty)
 admin.site.register(models.Section)
 admin.site.register(models.Course)
