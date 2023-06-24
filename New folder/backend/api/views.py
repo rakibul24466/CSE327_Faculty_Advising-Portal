@@ -19,7 +19,6 @@ from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
 from rest_framework.permissions import IsAuthenticated
 from django.views.decorators.csrf import csrf_exempt
-from django.db import IntegrityError
 
 
 from rest_framework import authentication
@@ -169,16 +168,9 @@ class GetAllClassroomAPIView(APIView):
     #get all classroom using GET request
     def get(self, request):
         try:
-            if "status" in request.data:
-                if request.data['status'] == "available":
-                    searchClassroom = models.Classroom.objects.all()
-                    classroom = models.CourseTaken.objects.filter(classroom = searchClassroom)
-                    serializer = serializers.ClassroomSerializer(classroom,many=True)
-                    return Response( serializer.data)
-            else:
-                classroom = models.Classroom.objects.all()
-                serializer = serializers.ClassroomSerializer(classroom,many=True)
-                return Response( serializer.data)
+            classroom = models.Classroom.objects.all()
+            serializer = serializers.ClassroomSerializer(classroom,many=True)
+            return Response( serializer.data)
         except models.Classroom.DoesNotExist:
             return Response({'message': 'Faculty list is empty or Cannot connect the database.'})
       
@@ -195,7 +187,7 @@ class GetAllClassroomAPIView(APIView):
     
 
 class CreateClassroomAPIView(APIView):
-    authentication_classes = (authentication.TokenAuthentication,)
+    # authentication_classes = (authentication.TokenAuthentication,)
     # permission_classes=[AllowAny]
     
     #Creating classroom
@@ -203,25 +195,23 @@ class CreateClassroomAPIView(APIView):
         #using the buildin and floor details at a whole
     def post(self, request):
         building = request.data['building_name']
-        try:
-            if 'roomNo' in request.data:
-                roomNo = request.data['roomNo']
-                total_seat =  int(request.data["total_seat"])
-                details =  request.data["detail"]
-                classroom = models.Classroom.objects.create(building=building,roomNo=roomNo,seat=total_seat,details=details)
-                return Response({"message":str(classroom )+" has been created with all the slots"})
-            else:
-                total_floor = int(request.data['total_floor'])
-                per_floor = int(request.data['per_floor'])
-                total_seat =  int(request.data["total_seat"])
-                details =  request.data["detail"]
-                for i in range(1,total_floor+1):
-                    for j in range(per_floor):
-                        classroom = models.Classroom.objects.create(building=building,roomNo=i*100+j,seat=total_seat,details=details)
-                return Response({"message":str(classroom )+" has been created with all the slots"})
-        except IntegrityError as e:    
-            return Response({"message":str(e)})
-        
+        if request.data['roomNo'] is not None :
+            roomNo = request.data['roomNo']
+            total_seat =  int(request.data["total_seat"])
+            details =  request.data["detail"]
+            classroom = models.Classroom.objects.create(building=building,roomNo=roomNo,seat=total_seat,details=details)
+            return Response({"message":str(classroom )+" has been created with all the slots"})
+        else:
+            total_floor = int(request.data['total_floor'])
+            per_floor = int(request.data['perfloor'])
+            total_seat =  int(request.data["total_seat"])
+            details =  request.data["detail"]
+            for i in range(total_floor):
+                for j in range(per_floor):
+                    classroom = models.Classroom.objects.create(building=building,roomNo=i*100+j,seat=total_seat,details=details)
+            return Response({"message":str(classroom )+" has been created with all the slots"})
+    
+    
     def delete(self, request):
         try:
             building = request.data['building_name']

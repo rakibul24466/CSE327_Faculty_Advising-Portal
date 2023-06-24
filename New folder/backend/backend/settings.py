@@ -20,7 +20,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-cpvukakp*$z-pta962wx)id_pfd$t#ll=n=e(@9v&*2wkr9f4*'
+SECRET_KEY = 'django-insecure-o=tzj(8+-e#l6b+p71i2a^h*3d4c!k!ghjf6l^&h4vvj!0ex5n'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -33,8 +33,8 @@ CORS_ORIGIN_WHITELIST = [
 
 CSRF_TRUSTED_ORIGINS = ['http://127.0.0.1:8000','http://*.127.0.0.1:8000','http://*.127.0.0.1','https://*.127.0.0.1:8000','https://*.127.0.0.1']
 
-
 # Application definition
+
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -50,33 +50,20 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
-   'django.middleware.security.SecurityMiddleware',
+    'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
+      'corsheaders.middleware.CorsMiddleware',
+
 ]
 
 ROOT_URLCONF = 'backend.urls'
 
-TEMPLATES = [
-    {
-        'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
-        'APP_DIRS': True,
-        'OPTIONS': {
-            'context_processors': [
-                'django.template.context_processors.debug',
-                'django.template.context_processors.request',
-                'django.contrib.auth.context_processors.auth',
-                'django.contrib.messages.context_processors.messages',
-            ],
-        },
-    },
-]
+
 
 WSGI_APPLICATION = 'backend.wsgi.application'
 
@@ -85,6 +72,10 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 
 DATABASES = {
+    # 'default': {
+    #     'ENGINE': 'django.db.backends.sqlite3',
+    #     'NAME': BASE_DIR / 'db.sqlite3',
+    # }
      'default': {  
         'ENGINE': 'django.db.backends.mysql',  
         'NAME': 'cse327',  
@@ -117,7 +108,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 PASSWORD_HASHERS = [
  'django.contrib.auth.hashers.PBKDF2PasswordHasher',
   'django.contrib.auth.hashers.PBKDF2SHA1PasswordHasher',
@@ -133,9 +123,7 @@ PASSWORD_HASHERS = [
 
 AUTHENTICATION_BACKENDS = [
     'api.EmailOrUsernameModelBackend.EmailOrUsernameModelBackend',
-    'django.contrib.auth.backends.ModelBackend'
-    ]
-
+    'django.contrib.auth.backends.ModelBackend']
 
 # Internationalization
 # https://docs.djangoproject.com/en/4.1/topics/i18n/
@@ -149,8 +137,7 @@ USE_I18N = True
 USE_TZ = True
 
 
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/4.1/howto/static-files/
+
 
 from pathlib import Path
 
@@ -190,5 +177,4 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # Static files (CSS, JavaScript, Images)
 STATIC_URL = '/static/'
 # https://docs.djangoproject.com/en/4.1/howto/static-files/
-
 CORS_ORIGIN_ALLOW_ALL = True
