@@ -38,44 +38,6 @@ FACULTY_DESIGNATIONS = [
     "Professor",
 ]
 
-# Create your models here.
-
-# # Custom validator function for credit
-# def validate_total_credit(credit):
-#         if credit > 11:
-#             raise ValidationError("total credit cannot extend 11")
-#         else:
-#             return credit
-        
-
-
-
-
-
-# class Educator(models.Model):
-#     name = models.CharField(_("Name "), max_length=50)
-#     initial = models.CharField(_("Short initial  "), max_length=50)
-#     designation = models.CharField(_("Designation "), max_length=50,blank=True)
-#     email = models.EmailField(_("Email"), max_length=254,blank=True)
-#     ext = models.IntegerField(_("Phone extention number"),blank=True,default=0)
-#     room = models.IntegerField(_("Room Number"),blank=True,default=0)
-#     mobile = models.CharField(_("Mobile Number"), max_length=50,blank=True)
-    
-
-#     class Meta:
-#         verbose_name = _("Educator")
-#         verbose_name_plural = _("Educators")
-
-#     def save(self, *args, **kwargs):
-#       self.designation = FACULTY_DESIGNATIONS[0]
-#       super(Educator, self).save(*args, **kwargs) # Call the real save() method
-    
-#     def __str__(self):
-#         return self.name
-
-#     def get_absolute_url(self):
-#         return reverse("Educator_detail", kwargs={"pk": self.pk})
-
 
         
 class Faculty(models.Model):
@@ -165,7 +127,7 @@ class Section(models.Model):
             super(Section, self).save(*args, **kwargs) # Call the real save() method
 
     def __str__(self):
-        return str(self.course)+" "+str(self.no)
+        return str(self.course)+" "+str(self.no) 
 
     def get_absolute_url(self):
         return reverse("Section_detail", kwargs={"pk": self.pk})
@@ -173,8 +135,7 @@ class Section(models.Model):
 
 
 class Classroom(models.Model):
-    building = models.CharField(_("academic building abbbrebiation"),max_length=10, choices=BUILDING)
-    roomNo= models.PositiveIntegerField(_("classroom number"),primary_key=True)
+    roomNo= models.CharField(_("classroom number"),max_length=50,primary_key=True)
     seat = models.PositiveIntegerField(_("Available seat for students"))
     details = models.CharField(_("Classroom details e.g. projector,computer et"), max_length=150)
     
@@ -183,7 +144,7 @@ class Classroom(models.Model):
         verbose_name_plural = _("Classrooms")
 
     def __str__(self):
-        return self.building+" - "+str(self.roomNo) 
+        return str(self.roomNo) 
 
     def get_absolute_url(self):
         return reverse("Classroom_detail", kwargs={"pk": self.pk})
@@ -214,7 +175,7 @@ class ClassSlot(models.Model):
         super(ClassSlot, self).save(*args, **kwargs) # Call the real save() method
     
     def __str__(self):
-        return str(self.classroom)+" "+ str(self.slot)
+        return str(self.classroom)+" "+ str(self.slot) + " " + str(self.pk)
 
     def get_absolute_url(self):
         return reverse("ClassSlot_detail", kwargs={"pk": self.pk})

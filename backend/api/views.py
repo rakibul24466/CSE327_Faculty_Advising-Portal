@@ -188,37 +188,36 @@ class CreateClassroomAPIView(APIView):
     
     #Creating classroom
         #using classroom number
-        #using the buildin and floor details at a whole
+        #using the building and floor details at a whole
     def post(self, request):
-        building = request.data['building_name']
         try:
             if 'roomNo' in request.data:
                 roomNo = request.data['roomNo']
                 total_seat =  int(request.data["total_seat"])
                 details =  request.data["detail"]
-                classroom = models.Classroom.objects.create(building=building,roomNo=roomNo,seat=total_seat,details=details)
+                classroom = models.Classroom.objects.create(roomNo=roomNo,seat=total_seat,details=details)
                 return Response({"message":str(classroom )+" has been created with all the slots"})
             else:
                 total_floor = int(request.data['total_floor'])
                 per_floor = int(request.data['per_floor'])
                 total_seat =  int(request.data["total_seat"])
                 details =  request.data["detail"]
+                building = request.data['building_name']
                 for i in range(1,total_floor+1):
                     for j in range(per_floor):
-                        classroom = models.Classroom.objects.create(building=building,roomNo=i*100+j,seat=total_seat,details=details)
+                        classroom = models.Classroom.objects.create(roomNo=building+str(i*100+j),seat=total_seat,details=details)
                 return Response({"message":"All the classroom have been created with all the slots"})
         except IntegrityError as e:    
             return Response({"message":str(e)})
         
     def delete(self, request):
         try:
-            building = request.data['building_name']
             roomNo = request.data['roomNo']
-            classroom = models.Classroom.objects.get(building=building,roomNo=roomNo)
+            classroom = models.Classroom.objects.get(roomNo=roomNo)
             classroom.delete()
-            return Response({"message":building+" - " + roomNo+ " has been deleted with all the slots"})
+            return Response({"message": roomNo+ " has been deleted with all the slots"})
         except models.Classroom.DoesNotExist: 
-            return Response({"message":building+" - " + roomNo+" could not be found"})
+            return Response({"message": roomNo+" could not be found"})
 
 
 class GetAllClassroomAPIView(APIView):
@@ -249,13 +248,12 @@ class GetAllClassroomAPIView(APIView):
       
     ##get classroom by classroom no and building intial using POST request   
     def post(self, request):
-        building= request.data['building']
         room_no = request.data['roomNo']
         classroom = None
         try:
             available = False
             time_slot = None
-            classroom = models.Classroom.objects.get(building=building,roomNo=room_no)
+            classroom = models.Classroom.objects.get(roomNo=room_no)
             if "status" in request.data:
                 if request.data['status'] == "Available":
                     available = True
@@ -270,7 +268,9 @@ class GetAllClassroomAPIView(APIView):
 
 
 
+from django.utils.datastructures import MultiValueDictKeyError
 
+#Course taking api
 class TakeCourseAPIView(APIView):
     authentication_classes = (authentication.TokenAuthentication,)
     # permission_classes=[AllowAny]
@@ -278,22 +278,47 @@ class TakeCourseAPIView(APIView):
     def post(self,request):
         print(request.user)
         try:
-            faculty = models.Faculty.objects.get(user = request.user)
-            section = request.data["section_id"]
-            time_slot = request.data['time_slot_id']
-            buidling  = request.data['building']
+            faculty = models.Faculty.objects.get( user = request.user)
+            time_slot = models.ClassSlot.objects.get(pk=int(request.data['time_slot_id']))
             room_no  = request.data['room_no']
-            classroom = models.Classroom.get(roomNo=room_no,buidling=buidling)
-            course = models.Course.objects.get(request.data['course_code'])
-            faculty.total_credit = faculty.total_credit  + course.credit
+            classroom = models.Classroom.objects.get(roomNo=room_no)
+            course = models.Course.objects.get(code = request.data['course_code'])
+            section = models.Section.objects.get( no = int(request.data["section_id"]))
+
+            if time_slot.available == False:
+                return Response({"message":"Time slot is occupied"})
             
+            if course.code != section.course.code:
+                faculty.total_credit = faculty.total_credit  - section.course.credit
+                faculty.total_credit = faculty.total_credit  + course.credit
+                if faculty.total_credit > 11:
+                    return Response({"message":"Faculty credit cannot cross 11"})
+                faculty.save()
+            if time_slot.available != section.time_slot.available:
+                section.time_slot.available =True
+                section.time_slot.save()
+                
+            section.faculty=faculty
+            section.time_slot=time_slot
+            section.classroom = classroom
+            section.save()
+            time_slot.available = False
+            time_slot.save()
+            section_serializer = serializers.SectionSerializer(section)
+            return Response(section_serializer.data)
         except models.Faculty.DoesNotExist:
             return Response({"message":"Must be a faculty"})
+        
+        except models.ClassSlot.DoesNotExist:
+            return Response({"message":"Class Slot invalid"})
         
         except IntegrityError as e:
             return Response({"message":str(e)})
         
-        finally:
-            return Response({})
+        except MultiValueDictKeyError as e:
+            return Response({"message":str(e) + " Missing field"})
+            
+        # finally:
+        #     return Response({})
     
     
