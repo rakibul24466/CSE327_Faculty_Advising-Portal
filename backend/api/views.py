@@ -270,6 +270,7 @@ class GetAllClassroomAPIView(APIView):
 
 from django.utils.datastructures import MultiValueDictKeyError
 
+#Course taking api
 class TakeCourseAPIView(APIView):
     authentication_classes = (authentication.TokenAuthentication,)
     # permission_classes=[AllowAny]
@@ -283,10 +284,10 @@ class TakeCourseAPIView(APIView):
             classroom = models.Classroom.objects.get(roomNo=room_no)
             course = models.Course.objects.get(code = request.data['course_code'])
             section = models.Section.objects.get( no = int(request.data["section_id"]))
-            
-            # section_serializer = serializers.SectionSerializer(section)
-            # return Response(section_serializer.data)
 
+            if time_slot.available == False:
+                return Response({"message":"Time slot is occupied"})
+            
             if course.code != section.course.code:
                 faculty.total_credit = faculty.total_credit  - section.course.credit
                 faculty.total_credit = faculty.total_credit  + course.credit
