@@ -34,10 +34,14 @@ class LoginView(APIView):
         if user is not None:
             role = ""
             token , created= Token.objects.get_or_create(user=user)
-            person = models.Faculty.objects.get(user=user)
-            if person.designation in models.FACULTY_DESIGNATIONS:
+            person = None
+            try:
+                person = models.Faculty.objects.get(user=user)
                 role = "Faculty"
-            return Response({'token': token.key,'designation':person.designation,"user_email":user.email,"user_name":user.get_username(),'role':role})
+                return Response({'token': token.key,'designation':person.designation,"user_email":person.email,"user_name":user.get_username(),'role':role})
+            except models.Faculty.DoesNotExist:
+                role = "Course Admin"
+                return Response({'token': token.key,"user_email":user.email,"user_name":user.get_username(),'role':role})
         else:
             return Response({'error': 'Invalid username or password'})
     
@@ -123,11 +127,22 @@ class GetAllCourseAPIView(APIView):
     def post(self, request):
         code = request.data['code']
         try:
-            course = models.Course.objects.get(code=code)
-            serializer = serializers.CourseSerializer(course)
-            return Response( serializer.data)
+            # sectionSerializer = None
+            if "faculty_initial" in request.data:
+                faculty_initial = request.data["faculty_initial"]
+                faculty = models.Faculty.objects.get(initial = faculty_initial )
+                course = models.Course.objects.get(code=code)
+                sections = models.Section.objects.filter(course=course,faculty=faculty)
+                sectionSerializer = serializers.SectionSerializer(sections,many=True)
+                return Response( sectionSerializer.data)
+            else:
+                course = models.Course.objects.get(code=code)
+                serializer = serializers.CourseSerializer(course)
+                return Response( serializer.data)
         except models.Course.DoesNotExist:
             return Response({'message': str(code )+' has not been offered this semester'})
+        except models.Faculty.DoesNotExist:
+            return Response({'message': 'Faculty has not been taking courses this semester'})
         
         
 class GetAllFacultyAPIView(APIView):
@@ -217,7 +232,7 @@ class GetAllClassroomAPIView(APIView):
             #Gets all the available classroom 
             if "status" in request.data:
                 status = False
-                if request.data['status'] == "available":
+                if request.data['status'] == "Available":
                     status = True
                 class_slot = models.ClassSlot.objects.filter(available=status)
                 classroom = class_slot.values_list('classroom', flat=True).distinct()
@@ -252,5 +267,11 @@ class GetAllClassroomAPIView(APIView):
             return Response( serializer.data)
         except models.Classroom.DoesNotExist:
             return Response({'message': 'Classroom not found'})
-    
 
+
+
+
+class TakeCourseAPIView(APIView):
+    authentication_classes = (authentication.TokenAuthentication,)
+    # permission_classes=[AllowAny]
+    

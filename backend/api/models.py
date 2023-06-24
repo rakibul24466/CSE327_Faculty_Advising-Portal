@@ -80,7 +80,7 @@ FACULTY_DESIGNATIONS = [
         
 class Faculty(models.Model):
     name = models.CharField(_("Name "), max_length=50)
-    initial = models.CharField(_("Short initial  "), max_length=50)
+    initial = models.CharField(_("Short initial  "), max_length=50,unique=True)
     designation = models.CharField(_("Designation "), max_length=50,blank=True)
     email = models.EmailField(_("Email"), max_length=254,blank=True)
     ext = models.IntegerField(_("Phone extention number"),blank=True,default=0)
@@ -123,14 +123,24 @@ class Course(models.Model):
         verbose_name_plural = _("Courses")
 
     def save(self, *args, **kwargs):
-       if self.id is not None:
-           c = Course.objects.get(pk=self.id)
-           if c.number_of_section > self.number_of_section:
-               raise ValidationError(" Section number cannot be reduced at the moment.")
-       super(Course, self).save(*args, **kwargs) # Call the real save() method
-       for i in range(1,self.number_of_section+1):
-           Section(no=i,course=self).save()
+       try:
+            faculty = Faculty.objects.get(initial="TBA")
            
+            if self.id is not None:
+                c = Course.objects.get(pk=self.id)
+                if c.number_of_section > self.number_of_section:
+                    raise ValidationError(" Section number cannot be reduced at the moment.")
+            super(Course, self).save(*args, **kwargs) # Call the real save() method
+            ## random available class_slot
+            class_slot = ClassSlot.objects.filter(available=True)[:self.number_of_section]
+            classroom = class_slot.values_list('classroom', flat=True)
+            print(class_slot)
+            print(classroom)
+            for i,j,k in zip(range(1,self.number_of_section+1),class_slot,classroom):
+                Section(no=i,course=self,faculty=faculty,time_slot=j,classroom=Classroom.objects.get(pk=k)).save()
+       except Faculty.DoesNotExist:
+            raise ValidationError(" TBA has not been created yet.")
+
     def __str__(self):
         return self.code+" ("+str(self.type)+") "
 
@@ -143,21 +153,16 @@ from django.core.exceptions import ValidationError
 class Section(models.Model):
     no = models.IntegerField(_("Section no"),unique=True,primary_key=True)
     course = models.ForeignKey("Course", verbose_name=_("Course Name"), on_delete=models.CASCADE,blank=True)
-    faculty = models.OneToOneField("Faculty", verbose_name=_("Faculty taking the class"), on_delete=models.CASCADE,blank=True)
+    faculty = models.ForeignKey("Faculty", verbose_name=_("Faculty taking the class"), on_delete=models.CASCADE,blank=True)
     time_slot = models.OneToOneField("ClassSlot", verbose_name=_("Class slot"), on_delete=models.CASCADE,blank=True)
-    classroom = models.OneToOneField("Classroom", verbose_name=_("Classroom"), on_delete=models.CASCADE,blank=True)
+    classroom = models.ForeignKey("Classroom", verbose_name=_("Classroom"), on_delete=models.CASCADE,blank=True)
     
     class Meta:
         verbose_name = _("Section")
         verbose_name_plural = _("Sections")
     
     def save(self, *args, **kwargs):
-       try:
-            self.faculty = models.Facutly.objects.get(intial="TBA")
             super(Section, self).save(*args, **kwargs) # Call the real save() method
-
-       except models.Faculty.DoesNotExist as e:
-            raise ValidationError("TBA Faculty not initialized")
 
     def __str__(self):
         return str(self.course)+" "+str(self.no)

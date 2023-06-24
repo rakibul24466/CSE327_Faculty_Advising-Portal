@@ -26,12 +26,12 @@ class ClassSlotSerializer(serializers.ModelSerializer):
         model = models.ClassSlot
         fields = '__all__'
 
+class CourseSerializer(serializers.ModelSerializer):
 
-# class CourseTakenSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = models.CourseTaken
-#         fields = '__all__'
-
+    class Meta:
+        model = models.Course
+        fields = '__all__'
+        
 
 class RegistrationSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
@@ -72,8 +72,18 @@ class FacultyRegistrationSerializer(serializers.ModelSerializer):
         faculty.save()
         return faculty
     
-class CourseSerializer(serializers.ModelSerializer):
-
+class SectionSerializer(serializers.ModelSerializer):
+    faculty = FacultySerializer( read_only=True)
+    course = CourseSerializer( read_only=True)
+    time_slot = ClassSlotSerializer(read_only=True)
+    classroom = ClassroomSerializer(read_only=True)
+    
     class Meta:
-        model = models.Course
+        model = models.Section
         fields = '__all__'
+        
+
+    # def to_representation(self, instance):
+    #     ret = super().to_representation(instance)
+        
+    #     return ret
