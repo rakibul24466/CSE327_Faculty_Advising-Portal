@@ -89,7 +89,6 @@ class Faculty(models.Model):
     total_credit = models.FloatField(_("Number of credit taken"),default=0)
     user = models.OneToOneField(User, verbose_name=_("User authenticaiton profile"), on_delete=models.CASCADE)
     
-   
     def save(self, *args, **kwargs):
         self.user.is_staff = False
         self.user.groups.add(1)
@@ -138,13 +137,27 @@ class Course(models.Model):
     def get_absolute_url(self):
         return reverse("Course_detail", kwargs={"pk": self.pk})
 
+
+from django.core.exceptions import ValidationError
+
 class Section(models.Model):
     no = models.IntegerField(_("Section no"),unique=True,primary_key=True)
-    course = models.ForeignKey("Course", verbose_name=_("Course Name"), on_delete=models.CASCADE)
-
+    course = models.ForeignKey("Course", verbose_name=_("Course Name"), on_delete=models.CASCADE,blank=True)
+    faculty = models.OneToOneField("Faculty", verbose_name=_("Faculty taking the class"), on_delete=models.CASCADE,blank=True)
+    time_slot = models.OneToOneField("ClassSlot", verbose_name=_("Class slot"), on_delete=models.CASCADE,blank=True)
+    classroom = models.OneToOneField("Classroom", verbose_name=_("Classroom"), on_delete=models.CASCADE,blank=True)
+    
     class Meta:
         verbose_name = _("Section")
         verbose_name_plural = _("Sections")
+    
+    def save(self, *args, **kwargs):
+       try:
+            self.faculty = models.Facutly.objects.get(intial="TBA")
+            super(Section, self).save(*args, **kwargs) # Call the real save() method
+
+       except models.Faculty.DoesNotExist as e:
+            raise ValidationError("TBA Faculty not initialized")
 
     def __str__(self):
         return str(self.course)+" "+str(self.no)
@@ -152,43 +165,6 @@ class Section(models.Model):
     def get_absolute_url(self):
         return reverse("Section_detail", kwargs={"pk": self.pk})
 
-class CourseTaken(models.Model):
-    classroom = models.OneToOneField("Classroom", verbose_name=_("Classroom"), on_delete=models.CASCADE)
-    section  = models.OneToOneField("Course", verbose_name=_("Course Section"), on_delete=models.CASCADE)
-    class_slot  = models.OneToOneField("ClassSlot", verbose_name=_("Class slot"), on_delete=models.CASCADE)
-    faculty = models.OneToOneField("Faculty", verbose_name=_("Faculty Name"), on_delete=models.CASCADE)
-
-    def save(self, *args, **kwargs):
-       f = self.faculty
-       if f is None:
-           #if faculty not available
-           pass
-       
-       else:
-           #checking whether it is a faculty to make sure the total credit must not cross 11
-           if type(f).__name__ == "Faculty":
-            f.total_credit = f.total_credit + self.section.credit
-            if f.total_credit >11:
-                raise ValidationError(str(self.faculty)+" cannot take more than 11 credit")
-           
-           #checking that class slot must not overlap
-           c = self.class_slot
-           if c.available is False:
-               raise ValidationError(str(c)+" is already Booked at "+str(ScheduleNSU.class_schedule_tuple[c.slot-1]))
-           c.available = False
-           c.save()
-           f.save()
-           super(CourseTaken, self).save(*args, **kwargs) # Call the real save() method
-    
-    class Meta:
-        verbose_name = _("Course_Taken")
-        verbose_name_plural = _("Course_Takens")
-
-    def __str__(self):
-        return str(self.faculty)+ " " +str(self.section)
-
-    def get_absolute_url(self):
-        return reverse("Course_Taken_detail", kwargs={"pk": self.pk})
 
 
 class Classroom(models.Model):
@@ -197,13 +173,12 @@ class Classroom(models.Model):
     seat = models.PositiveIntegerField(_("Available seat for students"))
     details = models.CharField(_("Classroom details e.g. projector,computer et"), max_length=150)
     
-    
     class Meta:
         verbose_name = _("Classroom")
         verbose_name_plural = _("Classrooms")
 
     def __str__(self):
-        return self.building+" - "+str(self.roomNo)
+        return self.building+" - "+str(self.roomNo) 
 
     def get_absolute_url(self):
         return reverse("Classroom_detail", kwargs={"pk": self.pk})
@@ -217,12 +192,12 @@ class Classroom(models.Model):
             class_slot.save()
        
 class ClassSlot(models.Model):
-    
     schedule = ScheduleNSU.class_schedule_tuple
-    
-    available = models.BooleanField(_("Class Slot available or not"),default=True)
-    slot = models.IntegerField(_("Class day - time "),choices= schedule)
     name = models.CharField(_("Slot name/time"), max_length=50,blank=True)
+    
+    slot = models.IntegerField(_("Class day - time "),choices= schedule)
+    available = models.BooleanField(_("Class Slot available or not"),default=True)
+    
     classroom = models.ForeignKey("Classroom", verbose_name=_("Classs room no"), on_delete=models.CASCADE)
     
     class Meta:

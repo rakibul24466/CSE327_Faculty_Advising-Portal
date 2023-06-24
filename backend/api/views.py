@@ -32,14 +32,12 @@ class LoginView(APIView):
         # print(request.data)   
         user = authenticate(username=username, password=password)
         if user is not None:
-            token = Token.objects.create(user=user)
+            role = ""
+            token , created= Token.objects.get_or_create(user=user)
             person = models.Faculty.objects.get(user=user)
-            print()
-            print()
-            print()
-            print(str(person))
-            # return Response({'token': token.key})
-            return Response({'token': token.key,'designation':person.designation})
+            if person.designation in models.FACULTY_DESIGNATIONS:
+                role = "Faculty"
+            return Response({'token': token.key,'designation':person.designation,"user_email":user.email,"user_name":user.get_username(),'role':role})
         else:
             return Response({'error': 'Invalid username or password'})
     
@@ -68,17 +66,7 @@ class RegistrationAPIView(APIView):
     
 
 
-class FacultyRegistrationAPIView(APIView):
-    authentication_classes = (authentication.TokenAuthentication,)
-    permission_classes=[AllowAny]
-    
-    def post(self, request):
-        serializer = serializers.FacultyRegistrationSerializer(data=request.data)
-        if serializer.is_valid():
-            faculty = serializer.save()
-            return Response({'message': str(faculty)+'  Registration successful'})
-        return Response(serializer.errors, status=400)
-    
+
 
 ##Course Create 
 class CourseCreateAPIView(APIView):
@@ -166,39 +154,18 @@ class GetAllFacultyAPIView(APIView):
         except models.Faculty.DoesNotExist:
             return Response({'message': str(initial )+' has not been taking course this semester'})
         
-        
-class GetAllClassroomAPIView(APIView):
+class FacultyRegistrationAPIView(APIView):
     authentication_classes = (authentication.TokenAuthentication,)
-    # permission_classes=[AllowAny]
+    permission_classes=[AllowAny]
     
-    
-    #get all classroom using GET request
-    def get(self, request):
-        try:
-            if "status" in request.data:
-                if request.data['status'] == "available":
-                    searchClassroom = models.Classroom.objects.all()
-                    classroom = models.CourseTaken.objects.filter(classroom = searchClassroom)
-                    serializer = serializers.ClassroomSerializer(classroom,many=True)
-                    return Response( serializer.data)
-            else:
-                classroom = models.Classroom.objects.all()
-                serializer = serializers.ClassroomSerializer(classroom,many=True)
-                return Response( serializer.data)
-        except models.Classroom.DoesNotExist:
-            return Response({'message': 'Faculty list is empty or Cannot connect the database.'})
-      
-    ##get classroom by classroom no and building intial using POST request   
     def post(self, request):
-        building= request.data['building']
-        roomNo= request.data['roomNo']
-        try:
-            classroom = models.Classroom.objects.get(building=building,roomNo=roomNo)
-            serializer = serializers.ClassroomSerializer(classroom )
-            return Response( serializer.data)
-        except models.Classroom.DoesNotExist:
-            return Response({'message': str(classroom )+' has not been taking course this semester'})
+        serializer = serializers.FacultyRegistrationSerializer(data=request.data)
+        if serializer.is_valid():
+            faculty = serializer.save()
+            return Response({'message': str(faculty)+'  Registration successful'})
+        return Response(serializer.errors, status=400)
     
+
 
 class CreateClassroomAPIView(APIView):
     authentication_classes = (authentication.TokenAuthentication,)
@@ -224,7 +191,7 @@ class CreateClassroomAPIView(APIView):
                 for i in range(1,total_floor+1):
                     for j in range(per_floor):
                         classroom = models.Classroom.objects.create(building=building,roomNo=i*100+j,seat=total_seat,details=details)
-                return Response({"message":str(classroom )+" has been created with all the slots"})
+                return Response({"message":"All the classroom have been created with all the slots"})
         except IntegrityError as e:    
             return Response({"message":str(e)})
         
@@ -238,5 +205,42 @@ class CreateClassroomAPIView(APIView):
         except models.Classroom.DoesNotExist: 
             return Response({"message":building+" - " + roomNo+" could not be found"})
 
-              
-              
+
+class GetAllClassroomAPIView(APIView):
+    authentication_classes = (authentication.TokenAuthentication,)
+    # permission_classes=[AllowAny]
+    
+    
+    #get all classroom using GET request
+    def get(self, request):
+        try:
+            if "status" in request.data:
+                status = False
+                if request.data['status'] == "available":
+                    status = True
+                class_slot = models.ClassSlot.objects.filter(available=status)
+                classroom = class_slot.values_list('classroom', flat=True).distinct()
+                classroom = models.Classroom.objects.filter(pk__in=classroom)
+                serializer = serializers.ClassroomSerializer(classroom,many=True)
+                return Response( serializer.data)
+            else:
+                classroom = models.Classroom.objects.all()
+                serializer = serializers.ClassroomSerializer(classroom,many=True)
+                return Response( serializer.data)
+        except models.Classroom.DoesNotExist:
+            return Response({'message': 'Faculty list is empty or Cannot connect the database.'})
+      
+    ##get classroom by classroom no and building intial using POST request   
+    def post(self, request):
+        building= request.data['building']
+        room_no= request.data['roomNo']
+        try:
+            classroom = models.Classroom.objects.get(building=building,roomNo=room_no)
+            time_slot = models.ClassSlot.objects.get(classroom=classroom)
+            
+            serializer = serializers.ClassroomSerializer(classroom )
+            return Response( serializer.data)
+        except models.Classroom.DoesNotExist:
+            return Response({'message': str(classroom )+' has not been taking course this semester'})
+    
+

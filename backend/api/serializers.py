@@ -20,10 +20,17 @@ class ClassroomSerializer(serializers.ModelSerializer):
         model = models.Classroom
         fields = '__all__'
 
-class CourseTakenSerializer(serializers.ModelSerializer):
+
+class ClassSlotSerializer(serializers.ModelSerializer):
     class Meta:
-        model = models.CourseTaken
+        model = models.ClassSlot
         fields = '__all__'
+
+
+# class CourseTakenSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = models.CourseTaken
+#         fields = '__all__'
 
 
 class RegistrationSerializer(serializers.ModelSerializer):
