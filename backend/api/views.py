@@ -29,11 +29,17 @@ class LoginView(APIView):
     def post(self, request):
         username = request.data['username']
         password = request.data['password']
-        print(request.data)   
+        # print(request.data)   
         user = authenticate(username=username, password=password)
         if user is not None:
             token = Token.objects.create(user=user)
-            return Response({'token': token.key})
+            person = models.Faculty.objects.get(user=user)
+            print()
+            print()
+            print()
+            print(str(person))
+            # return Response({'token': token.key})
+            return Response({'token': token.key,'designation':person.designation})
         else:
             return Response({'error': 'Invalid username or password'})
     
@@ -70,7 +76,7 @@ class FacultyRegistrationAPIView(APIView):
         serializer = serializers.FacultyRegistrationSerializer(data=request.data)
         if serializer.is_valid():
             faculty = serializer.save()
-            return Response({'message': str(faculty)+'Registration successful'})
+            return Response({'message': str(faculty)+'  Registration successful'})
         return Response(serializer.errors, status=400)
     
 
