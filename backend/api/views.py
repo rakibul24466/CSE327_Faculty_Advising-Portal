@@ -40,7 +40,7 @@ class LoginView(APIView):
                 role = "Faculty"
                 return Response({'token': token.key,'designation':person.designation,"user_email":person.email,"user_name":user.get_username(),'role':role})
             except models.Faculty.DoesNotExist:
-                role = "Course Admin"
+                role = "Admin"
                 return Response({'token': token.key,"user_email":user.email,"user_name":user.get_username(),'role':role})
         else:
             return Response({'error': 'Invalid username or password'})
@@ -274,4 +274,26 @@ class GetAllClassroomAPIView(APIView):
 class TakeCourseAPIView(APIView):
     authentication_classes = (authentication.TokenAuthentication,)
     # permission_classes=[AllowAny]
+    
+    def post(self,request):
+        print(request.user)
+        try:
+            faculty = models.Faculty.objects.get(user = request.user)
+            section = request.data["section_id"]
+            time_slot = request.data['time_slot_id']
+            buidling  = request.data['building']
+            room_no  = request.data['room_no']
+            classroom = models.Classroom.get(roomNo=room_no,buidling=buidling)
+            course = models.Course.objects.get(request.data['course_code'])
+            faculty.total_credit = faculty.total_credit  + course.credit
+            
+        except models.Faculty.DoesNotExist:
+            return Response({"message":"Must be a faculty"})
+        
+        except IntegrityError as e:
+            return Response({"message":str(e)})
+        
+        finally:
+            return Response({})
+    
     
