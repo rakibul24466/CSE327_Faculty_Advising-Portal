@@ -10,29 +10,33 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.1/ref/settings/
 """
 
+import os
+from dotenv import load_dotenv
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
+load_dotenv()
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-cpvukakp*$z-pta962wx)id_pfd$t#ll=n=e(@9v&*2wkr9f4*'
+SECRET_KEY = os.getenv("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
-CORS_ORIGIN_WHITELIST = [
-    'http://localhost:3000',  # Add your frontend URL here
-]
+CORS_ORIGIN_WHITELIST = os.getenv('CORS_ORIGIN_WHITELIST').split(
+    ',')  # Add your frontend URL here
 
-CSRF_TRUSTED_ORIGINS = ['http://127.0.0.1:8000','http://*.127.0.0.1:8000','http://*.127.0.0.1','https://*.127.0.0.1:8000','https://*.127.0.0.1']
 
+CORS_ORIGIN_ALLOW_ALL = True
+CSRF_TRUSTED_ORIGINS = os.getenv('CSRF_TRUSTED_ORIGINS').split(',')
 
 # Application definition
 
@@ -50,7 +54,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
-   'django.middleware.security.SecurityMiddleware',
+    'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -85,17 +89,17 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 
 DATABASES = {
-     'default': {  
-        'ENGINE': 'django.db.backends.mysql',  
-        'NAME': 'cse327',  
-        'USER': 'root',  
-        'PASSWORD': '',  
-        'HOST': '127.0.0.1',  
-        'PORT': '3306',  
-        'OPTIONS': {  
-            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'"  
-        }  
-    }  
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': os.getenv('DBMS_NAME'),
+        'USER': os.getenv('DBMS_USER'),
+        'PASSWORD': os.getenv('DBMS_PASSWORD'),
+        'HOST': os.getenv('DBMS_HOST'),
+        'PORT': os.getenv('DBMS_PORT'),
+        'OPTIONS': {
+            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'"
+        }
+    }
 }
 
 
@@ -119,22 +123,22 @@ AUTH_PASSWORD_VALIDATORS = [
 
 
 PASSWORD_HASHERS = [
- 'django.contrib.auth.hashers.PBKDF2PasswordHasher',
-  'django.contrib.auth.hashers.PBKDF2SHA1PasswordHasher',
-  'django.contrib.auth.hashers.Argon2PasswordHasher',
-  'django.contrib.auth.hashers.BCryptSHA256PasswordHasher',
-  'django.contrib.auth.hashers.BCryptPasswordHasher',
-  'django.contrib.auth.hashers.SHA1PasswordHasher',
-  'django.contrib.auth.hashers.MD5PasswordHasher',
-  'django.contrib.auth.hashers.UnsaltedSHA1PasswordHasher',
-  'django.contrib.auth.hashers.UnsaltedMD5PasswordHasher',
-  'django.contrib.auth.hashers.CryptPasswordHasher',
+    'django.contrib.auth.hashers.PBKDF2PasswordHasher',
+    'django.contrib.auth.hashers.PBKDF2SHA1PasswordHasher',
+    'django.contrib.auth.hashers.Argon2PasswordHasher',
+    'django.contrib.auth.hashers.BCryptSHA256PasswordHasher',
+    'django.contrib.auth.hashers.BCryptPasswordHasher',
+    'django.contrib.auth.hashers.SHA1PasswordHasher',
+    'django.contrib.auth.hashers.MD5PasswordHasher',
+    'django.contrib.auth.hashers.UnsaltedSHA1PasswordHasher',
+    'django.contrib.auth.hashers.UnsaltedMD5PasswordHasher',
+    'django.contrib.auth.hashers.CryptPasswordHasher',
 ]
 
 AUTHENTICATION_BACKENDS = [
     'api.EmailOrUsernameModelBackend.EmailOrUsernameModelBackend',
     'django.contrib.auth.backends.ModelBackend'
-    ]
+]
 
 
 # Internationalization
@@ -152,7 +156,6 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.1/howto/static-files/
 
-from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 TEMPLATES = [
@@ -161,12 +164,12 @@ TEMPLATES = [
         "DIRS": [BASE_DIR / "templates"],
         "APP_DIRS": True,
         'OPTIONS': {
-        'context_processors': [
-            'django.template.context_processors.debug',
-            'django.template.context_processors.request',
-            'django.contrib.auth.context_processors.auth',
-            'django.contrib.messages.context_processors.messages',
-        ],
+            'context_processors': [
+                'django.template.context_processors.debug',
+                'django.template.context_processors.request',
+                'django.contrib.auth.context_processors.auth',
+                'django.contrib.messages.context_processors.messages',
+            ],
         },
     },
 ]
@@ -176,9 +179,9 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.TokenAuthentication',
         'rest_framework.authentication.BasicAuthentication'
     ],
-'DEFAULT_PERMISSION_CLASSES': [
-    'rest_framework.permissions.IsAuthenticated',
-]
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ]
 }
 
 # Default primary key field type
@@ -191,4 +194,13 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 STATIC_URL = '/static/'
 # https://docs.djangoproject.com/en/4.1/howto/static-files/
 
-CORS_ORIGIN_ALLOW_ALL = True
+
+##Email Section
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_HOST_USER = 'saeem.temp@gmail.com'
+EMAIL_HOST_PASSWORD = 'ofnvchozjeknyboy'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_USE_SSL = False
+
