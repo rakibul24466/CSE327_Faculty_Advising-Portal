@@ -271,6 +271,7 @@ from django.utils.datastructures import MultiValueDictKeyError
 
 from django.conf import settings
 from django.core.mail import send_mail
+
 #Course taking api
 class TakeCourseAPIView(APIView):
     authentication_classes = (authentication.TokenAuthentication,)
@@ -283,40 +284,61 @@ class TakeCourseAPIView(APIView):
             room_no  = request.data['room_no']
             classroom = models.Classroom.objects.get(roomNo=room_no)
             course = models.Course.objects.get(code = request.data['course_code'])
-            section = models.Section.objects.get( no = int(request.data["section_id"]))
-
+            section = models.Section.objects.get(course = course, no = int(request.data["section_id"]))
+            try:
+                old_faculty  = models.Faculty.objects.get(initial = section.faculty)
+                if old_faculty.initial !="TBA":
+                    return Response({"message":"Already {} taking the section".format(old_faculty)})
+                else:
+                    faculty.total_credit = faculty.total_credit  + course.credit
+                    if faculty.total_credit > 11:
+                        return Response({"message":"Faculty can not take more than 11 credits"})
+            except models.Faculty.DoesNotExist:
+                pass
             if time_slot.available == False:
                 return Response({"message":"Time slot is occupied"})
 
-            if course.code != section.course.code:
-                faculty.total_credit = faculty.total_credit  - section.course.credit
-                faculty.total_credit = faculty.total_credit  + course.credit
-                if faculty.total_credit > 11:
-                    return Response({"message":"Faculty credit cannot cross 11"})
-                faculty.save()
+
             if time_slot.available != section.time_slot.available:
                 section.time_slot.available =True
                 section.time_slot.save()
-
+            
             section.faculty=faculty
             section.time_slot=time_slot
             section.classroom = classroom
-            section.save()
             time_slot.available = False
+            section.save()
             time_slot.save()
+            faculty.save()
+            print(faculty)
             section_serializer = serializers.SectionSerializer(section)
             return Response(section_serializer.data)
         except models.Faculty.DoesNotExist:
             return Response({"message":"Must be a faculty"})
 
         except models.ClassSlot.DoesNotExist:
-            return Response({"message":"Class Slot invalid"})
+            return Response({"message ":"Class Slot invalid"})
+        except models.Course.DoesNotExist:
+            return Response({"message":"Course not found "})
+        
 
         except IntegrityError as e:
             return Response({"message":str(e)})
 
         except MultiValueDictKeyError as e:
             return Response({"message":str(e) + " Missing field"})
+
+    def delete(self,request):
+        try:
+            faculty = models.Faculty.objects.get( user = request.user)
+            section = models.Section.objects.get( faculty = faculty,no=request.data['section_no'])
+            new_faculty = models.Faculty.get(initial="TBA")
+            section.faculty = new_faculty
+            section.save()
+            return Response({"message":"Section removed"})
+        except (models.Faculty.DoesNotExist,models.Section.DoesNotExist) as e:
+            return Response({"message":"You are not taking the course"})
+
 
 from django.utils.crypto import get_random_string
 from django.template.loader import render_to_string
