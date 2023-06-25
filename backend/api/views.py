@@ -110,8 +110,8 @@ class CourseCreateAPIView(APIView):
 
 class GetAllCourseAPIView(APIView):
     
-    authentication_classes = (authentication.TokenAuthentication,)
-    # permission_classes=[AllowAny]
+    # authentication_classes = (authentication.TokenAuthentication,)
+    permission_classes=[AllowAny]
     
     
     #get all courses using GET request
