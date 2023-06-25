@@ -56,7 +56,7 @@ class FacultyRegistrationSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = models.Faculty
-        fields = ['username','password','email', 'name', 'initial']
+        fields = ['username','password','email', 'name', 'initial','room','mobile']
 
     def create(self, validated_data):
         user = User.objects.create(
@@ -66,8 +66,10 @@ class FacultyRegistrationSerializer(serializers.ModelSerializer):
         initial = validated_data['initial']
         email = validated_data['email']
         name = validated_data['name']
+        room  = validated_data['room']
+        mobile = validated_data['mobile']
         user.set_password(validated_data['password'])
-        faculty = models.Faculty.objects.create(user=user,initial=initial,email=email,name=name)
+        faculty = models.Faculty.objects.create(user=user,initial=initial,email=email,name=name,room=room,mobile=mobile)
         user.save()
         faculty.save()
         return faculty
