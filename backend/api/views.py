@@ -349,13 +349,13 @@ class SendEmail(APIView):
     def post(self,request):
         try:
             subject = 'FACS Registration'
-            title = f'Hi {request.user.username}, thank you for registering FACS.'
+            title = f'Hi {request.data["username"]}, thank you for registering FACS.'
             email_from = settings.EMAIL_HOST_USER
             recipient_list = request.data["email"]
             created_password = get_random_string(8)
             html_template = 'new_registration_email_format.html'
             context = {
-                'username': 'John Doe',
+                'username': request.data["username"],
                 'password': created_password,
                 'title':title 
             }
