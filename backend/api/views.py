@@ -10,7 +10,6 @@ from datetime import datetime
 from django.contrib.auth import authenticate, login
 from . import serializers
 from . import models
-
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.authentication import TokenAuthentication, SessionAuthentication
@@ -20,9 +19,8 @@ from rest_framework.authtoken.models import Token
 from rest_framework.permissions import IsAuthenticated
 from django.views.decorators.csrf import csrf_exempt
 from django.db import IntegrityError
-
-
 from rest_framework import authentication
+
 class LoginView(APIView):
     authentication_classes = (authentication.TokenAuthentication,)
     permission_classes=[AllowAny]
@@ -68,9 +66,6 @@ class RegistrationAPIView(APIView):
             return Response(status.HTTP_201_CREATED,{'message': str(user)+'Registration successful'})
         return Response(serializer.errors, status=400)
     
-
-
-
 
 ##Course Create 
 class CourseCreateAPIView(APIView):
