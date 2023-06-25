@@ -147,7 +147,7 @@ class GetAllCourseAPIView(APIView):
         
 class GetAllFacultyAPIView(APIView):
     authentication_classes = (authentication.TokenAuthentication,)
-    # permission_classes=[AllowAny]
+
     
     
     #get all faculties using GET request
@@ -184,7 +184,6 @@ class FacultyRegistrationAPIView(APIView):
 
 class CreateClassroomAPIView(APIView):
     authentication_classes = (authentication.TokenAuthentication,)
-    # permission_classes=[AllowAny]
     
     #Creating classroom
         #using classroom number
@@ -222,7 +221,6 @@ class CreateClassroomAPIView(APIView):
 
 class GetAllClassroomAPIView(APIView):
     authentication_classes = (authentication.TokenAuthentication,)
-    # permission_classes=[AllowAny]
     
     
     #get all classroom using GET request
@@ -270,10 +268,12 @@ class GetAllClassroomAPIView(APIView):
 
 from django.utils.datastructures import MultiValueDictKeyError
 
+
+from django.conf import settings
+from django.core.mail import send_mail
 #Course taking api
 class TakeCourseAPIView(APIView):
     authentication_classes = (authentication.TokenAuthentication,)
-    # permission_classes=[AllowAny]
     
     def post(self,request):
         print(request.user)
@@ -287,7 +287,7 @@ class TakeCourseAPIView(APIView):
 
             if time_slot.available == False:
                 return Response({"message":"Time slot is occupied"})
-            
+
             if course.code != section.course.code:
                 faculty.total_credit = faculty.total_credit  - section.course.credit
                 faculty.total_credit = faculty.total_credit  + course.credit
@@ -297,7 +297,7 @@ class TakeCourseAPIView(APIView):
             if time_slot.available != section.time_slot.available:
                 section.time_slot.available =True
                 section.time_slot.save()
-                
+
             section.faculty=faculty
             section.time_slot=time_slot
             section.classroom = classroom
@@ -308,17 +308,54 @@ class TakeCourseAPIView(APIView):
             return Response(section_serializer.data)
         except models.Faculty.DoesNotExist:
             return Response({"message":"Must be a faculty"})
-        
+
         except models.ClassSlot.DoesNotExist:
             return Response({"message":"Class Slot invalid"})
-        
+
         except IntegrityError as e:
             return Response({"message":str(e)})
-        
+
         except MultiValueDictKeyError as e:
             return Response({"message":str(e) + " Missing field"})
+
+from django.utils.crypto import get_random_string
+from django.template.loader import render_to_string
+from django.utils.html import strip_tags
+
+class SendEmail(APIView):
+    authentication_classes = (authentication.TokenAuthentication,)
+    def post(self,request):
+        try:
+            subject = 'FACS Registration'
+            title = f'Hi {request.user.username}, thank you for registering FACS.'
+            email_from = settings.EMAIL_HOST_USER
+            recipient_list = request.data["email"]
+            created_password = get_random_string(8)
+            html_template = 'new_registration_email_format.html'
+            context = {
+                'username': 'John Doe',
+                'password': created_password,
+                'title':title 
+            }
+            html_content = render_to_string(html_template, context)
             
-        # finally:
-        #     return Response({})
-    
-    
+            # Generate the plain text version of the email
+            plain_text_content = strip_tags(html_content)
+            
+            mail = send_mail( subject, message=plain_text_content, from_email = email_from, recipient_list=[recipient_list] ,html_message=html_content, fail_silently=False)
+            status = "Mail sending failed."
+            if mail == 1:
+                status = "Mail Sent."
+            return Response({"message":status})
+        except IntegrityError as e:
+            return Response({"message":str(e)})
+
+        except MultiValueDictKeyError as e:
+            return Response({"message":str(e) + " Missing field"})
+
+def email_template(request):
+    return render(request,"new_registration_email_format.html",{
+                                                "username": "Give a username",
+                                                "password":  "created_password"
+                                             }
+                  )

@@ -27,7 +27,7 @@ BUILDING =(
 from api import ScheduleNSU
 
 COURSE_TYPE  = (("","Theory"),
-                ("L","Lab/Practical"))
+                ("L","Lab"))
 
 FACULTY_DESIGNATIONS = [
     "Junior Lecturer",

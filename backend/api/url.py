@@ -13,4 +13,6 @@ urlpatterns = [
     path('get_all_classroom', views.GetAllClassroomAPIView.as_view(), name='get_all_classroom'),
     path('take_course', views.TakeCourseAPIView.as_view(), name='take_course'),
     path('create_classroom', views.CreateClassroomAPIView.as_view(), name='create_classroom'),
+    path('send_mail', views.SendEmail.as_view(), name='send_mail'),
+    path('mail_template', views.email_template, name='mail_template'),
 ]
