@@ -346,7 +346,7 @@ class SendEmail(APIView):
             status = "Mail sending failed."
             if mail == 1:
                 status = "Mail Sent."
-            return Response({"message":status})
+            return Response({"message":status,"password":created_password,"email":recipient_list})
         except IntegrityError as e:
             return Response({"message":str(e)})
 
