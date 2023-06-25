@@ -72,7 +72,7 @@ class Faculty(models.Model):
         return reverse("Faculty_detail", kwargs={"pk": self.pk})
 
 
-
+from django.db import IntegrityError
 class Course(models.Model):
     name =  models.CharField(max_length=100)
     code = models.CharField(_("course Code"),max_length=10,unique=True)
@@ -96,13 +96,16 @@ class Course(models.Model):
             ## random available class_slot
             class_slot = ClassSlot.objects.filter(available=True)[:self.number_of_section]
             classroom = class_slot.values_list('classroom', flat=True)
-            print(class_slot)
-            print(classroom)
+            print(class_slot[0].available)
             for i,j,k in zip(range(1,self.number_of_section+1),class_slot,classroom):
                 Section(no=i,course=self,faculty=faculty,time_slot=j,classroom=Classroom.objects.get(pk=k)).save()
+                j.available = False
+                j.save()
        except Faculty.DoesNotExist:
             raise ValidationError(" TBA has not been created yet.")
-
+       except IntegrityError as e :
+            raise ValidationError(str(e))
+        
     def __str__(self):
         return self.code+" ("+str(self.type)+") "
 
@@ -113,7 +116,7 @@ class Course(models.Model):
 from django.core.exceptions import ValidationError
 
 class Section(models.Model):
-    no = models.IntegerField(_("Section no"),unique=True,primary_key=True)
+    no = models.IntegerField(_("Section no"),blank=True)
     course = models.ForeignKey("Course", verbose_name=_("Course Name"), on_delete=models.CASCADE,blank=True)
     faculty = models.ForeignKey("Faculty", verbose_name=_("Faculty taking the class"), on_delete=models.CASCADE,blank=True)
     time_slot = models.OneToOneField("ClassSlot", verbose_name=_("Class slot"), on_delete=models.CASCADE,blank=True)
