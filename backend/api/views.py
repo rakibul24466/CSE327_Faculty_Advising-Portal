@@ -284,10 +284,10 @@ class TakeCourseAPIView(APIView):
             room_no  = request.data['room_no']
             classroom = models.Classroom.objects.get(roomNo=room_no)
             course = models.Course.objects.get(code = request.data['course_code'])
-            section = models.Section.objects.get(course = course, no = int(request.data["section_id"]))
+            section = models.Section.objects.get(course = course, no = int(request.data["section_no"]))
             try:
                 old_faculty  = models.Faculty.objects.get(initial = section.faculty)
-                if old_faculty.initial !="TBA":
+                if old_faculty.initial !="TBA" and old_faculty!= faculty.initial:
                     return Response({"message":"Already {} taking the section".format(old_faculty)})
                 else:
                     faculty.total_credit = faculty.total_credit  + course.credit
@@ -332,11 +332,11 @@ class TakeCourseAPIView(APIView):
         try:
             faculty = models.Faculty.objects.get( user = request.user)
             section = models.Section.objects.get( faculty = faculty,no=request.data['section_no'])
-            new_faculty = models.Faculty.get(initial="TBA")
+            new_faculty = models.Faculty.objects.get(initial="TBA")
             section.faculty = new_faculty
             section.save()
             return Response({"message":"Section removed"})
-        except (models.Faculty.DoesNotExist,models.Section.DoesNotExist) as e:
+        except (models.Faculty.DoesNotExist,models.Section.DoesNotExist):
             return Response({"message":"You are not taking the course"})
 
 
@@ -344,6 +344,7 @@ from django.utils.crypto import get_random_string
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
 
+##Mail sending api
 class SendEmail(APIView):
     authentication_classes = (authentication.TokenAuthentication,)
     def post(self,request):

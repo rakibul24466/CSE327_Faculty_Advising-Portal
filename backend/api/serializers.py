@@ -80,6 +80,7 @@ class SectionSerializer(serializers.ModelSerializer):
     time_slot = ClassSlotSerializer(read_only=True)
     classroom = ClassroomSerializer(read_only=True)
     
+    
     class Meta:
         model = models.Section
         fields = '__all__'
