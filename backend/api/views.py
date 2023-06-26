@@ -10,6 +10,7 @@ from datetime import datetime
 from django.contrib.auth import authenticate, login
 from . import serializers
 from . import models
+
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.authentication import TokenAuthentication, SessionAuthentication
@@ -19,8 +20,9 @@ from rest_framework.authtoken.models import Token
 from rest_framework.permissions import IsAuthenticated
 from django.views.decorators.csrf import csrf_exempt
 from django.db import IntegrityError
-from rest_framework import authentication
 
+
+from rest_framework import authentication
 class LoginView(APIView):
     authentication_classes = (authentication.TokenAuthentication,)
     permission_classes=[AllowAny]
@@ -67,6 +69,9 @@ class RegistrationAPIView(APIView):
         return Response(serializer.errors, status=400)
     
 
+
+
+
 ##Course Create 
 class CourseCreateAPIView(APIView):
     authentication_classes = (authentication.TokenAuthentication,)
@@ -105,19 +110,24 @@ class CourseCreateAPIView(APIView):
 
 class GetAllCourseAPIView(APIView):
     
-    # authentication_classes = (authentication.TokenAuthentication,)
-    permission_classes=[AllowAny]
+    authentication_classes = (authentication.TokenAuthentication,)
     
     
     #get all courses using GET request
     def get(self, request):
         try:
-            course = models.Course.objects.all()
-            serializer = serializers.CourseSerializer(course,many=True)
-            return Response( serializer.data)
+            faculty = models.Faculty.objects.filter(user=request.user)
+            if len(faculty)==1:
+                sections = models.Section.objects.filter(faculty=faculty) 
+                serializer = serializers.SectionSerializer(sections,many=True)
+                return Response( serializer.data)
+            else:
+                course = models.Course.objects.all()
+                serializer = serializers.CourseSerializer(course,many=True)
+                return Response( serializer.data)
         except models.Course.DoesNotExist:
             return Response({'message': 'course list is empty or Cannot connect the database.'})
-      
+    
     #get course by course code using POST request   
     def post(self, request):
         code = request.data['code']
@@ -138,8 +148,7 @@ class GetAllCourseAPIView(APIView):
             return Response({'message': str(code )+' has not been offered this semester'})
         except models.Faculty.DoesNotExist:
             return Response({'message': 'Faculty has not been taking courses this semester'})
-        
-        
+
 class GetAllFacultyAPIView(APIView):
     authentication_classes = (authentication.TokenAuthentication,)
 
