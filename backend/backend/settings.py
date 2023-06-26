@@ -17,6 +17,8 @@ from pathlib import Path
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# os.environ["PATH"] += os.pathsep + 'C:/Program Files/Graphviz/bin'
+
 
 load_dotenv()
 
@@ -51,6 +53,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
     'corsheaders',
+    'django_extensions',
 ]
 
 MIDDLEWARE = [
@@ -197,10 +200,14 @@ STATIC_URL = '/static/'
 
 ##Email Section
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_HOST_USER = 'saeem.temp@gmail.com'
-EMAIL_HOST_PASSWORD = 'ofnvchozjeknyboy'
-EMAIL_PORT = 587
+EMAIL_HOST = os.getenv('EMAIL_HOST')
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
+EMAIL_PORT = os.getenv('EMAIL_PORT')
 EMAIL_USE_TLS = True
 EMAIL_USE_SSL = False
 
+GRAPH_MODELS ={
+'all_applications': True,
+'graph_models': True,
+}

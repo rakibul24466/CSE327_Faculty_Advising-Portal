@@ -4,6 +4,11 @@ from django.utils.translation import gettext_lazy as _
 from django.urls import reverse
 import pandas as pd
 from django.core.exceptions import ValidationError
+from django.db import IntegrityError
+from django.core.exceptions import ValidationError
+
+#using nsu class schedule
+from api import ScheduleNSU
 
 #days tuple list
 DAYS_OF_WEEK = (
@@ -23,8 +28,7 @@ BUILDING =(
     ("ADMIN","Admin Building")
 )
 
-#using nsu class schedule
-from api import ScheduleNSU
+
 
 COURSE_TYPE  = (("","Theory"),
                 ("L","Lab"))
@@ -39,7 +43,7 @@ FACULTY_DESIGNATIONS = [
 ]
 
 
-        
+
 class Faculty(models.Model):
     name = models.CharField(_("Name "), max_length=50)
     initial = models.CharField(_("Short initial  "), max_length=50,unique=True)
@@ -50,7 +54,7 @@ class Faculty(models.Model):
     mobile = models.CharField(_("Mobile Number"), max_length=50,blank=True)
     total_credit = models.FloatField(_("Number of credit taken"),default=0)
     user = models.OneToOneField(User, verbose_name=_("User authenticaiton profile"), on_delete=models.CASCADE)
-    
+
     def save(self, *args, **kwargs):
         self.user.is_staff = False
         self.user.groups.add(1)
@@ -72,7 +76,6 @@ class Faculty(models.Model):
         return reverse("Faculty_detail", kwargs={"pk": self.pk})
 
 
-from django.db import IntegrityError
 class Course(models.Model):
     name =  models.CharField(max_length=100)
     code = models.CharField(_("course Code"),max_length=10,unique=True)
@@ -99,8 +102,7 @@ class Course(models.Model):
             print(class_slot[0].available)
             for i,j,k in zip(range(1,self.number_of_section+1),class_slot,classroom):
                 Section(no=i,course=self,faculty=faculty,time_slot=j,classroom=Classroom.objects.get(pk=k)).save()
-                j.available = False
-                j.save()
+
        except Faculty.DoesNotExist:
             raise ValidationError(" TBA has not been created yet.")
        except IntegrityError as e :
@@ -113,7 +115,6 @@ class Course(models.Model):
         return reverse("Course_detail", kwargs={"pk": self.pk})
 
 
-from django.core.exceptions import ValidationError
 
 class Section(models.Model):
     no = models.IntegerField(_("Section no"),blank=True)
