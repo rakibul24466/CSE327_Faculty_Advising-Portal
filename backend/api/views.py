@@ -294,8 +294,8 @@ class TakeCourseAPIView(APIView):
                 old_faculty  = models.Faculty.objects.get(initial = section.faculty)
                 if old_faculty.initial !="TBA" and old_faculty!= faculty.initial:
                     return Response({"message":"Already {} taking the section".format(old_faculty)})
-                elif time_slot in " ":
-                    pass
+                # elif time_slot in " ":
+                #     pass
                 else:
                     faculty.total_credit = faculty.total_credit  + course.credit
                     if faculty.total_credit > 11:
