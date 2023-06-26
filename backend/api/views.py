@@ -294,7 +294,7 @@ class TakeCourseAPIView(APIView):
                 old_faculty  = models.Faculty.objects.get(initial = section.faculty)
                 if old_faculty.initial !="TBA" and old_faculty!= faculty.initial:
                     return Response({"message":"Already {} taking the section".format(old_faculty)})
-                # elif time_slot in " ":
+                # elif time_slot in :
                 #     pass
                 else:
                     faculty.total_credit = faculty.total_credit  + course.credit
@@ -319,7 +319,7 @@ class TakeCourseAPIView(APIView):
             faculty.save()
             print(faculty)
             section_serializer = serializers.SectionSerializer(section)
-            return Response(section_serializer.data)
+            return Response({"message":"Section taken successfully"})
         except models.Faculty.DoesNotExist:
             return Response({"message":"Must be a faculty"})
 
@@ -401,6 +401,7 @@ class GetFacultyTimeslot(APIView):
             faculty_sections = models.Section.objects.filter(faculty=faculty)
             faculty_slots = faculty_sections.values_list("time_slot").order_by("classroom")
             faculty_slots = models.ClassSlot.objects.filter(pk__in = faculty_slots)
+            print(faculty_slots)
             time_slot_serializer = serializers.ClassSlotSerializer(faculty_slots,many=True)
             return Response(time_slot_serializer.data)
         except models.Faculty.DoesNotExist:
