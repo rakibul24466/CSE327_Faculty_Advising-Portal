@@ -117,10 +117,10 @@ class SectionNewSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class SectionRoutineSerializer(serializers.ModelSerializer):
-    faculty = FacultyRoutineSerializer(read_only=True)
+    faculty = FacultySerializer(read_only=True)
     course = CourseRoutineSerializer( read_only=True)
-    time_slot = ClassSlotRoutineSerializer(read_only=True)
-    classroom = ClassroomRoutineSerializer(read_only=True)
+    time_slot = ClassSlotSerializer(read_only=True)
+    classroom = ClassroomSerializer(read_only=True)
     
     class Meta:
         model = models.Section

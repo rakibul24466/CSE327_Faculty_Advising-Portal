@@ -402,11 +402,8 @@ class GetFacultyTimeslot(APIView):
     def post(self,request):
         try:
             faculty = models.Faculty.objects.get(user=request.user)
-            faculty_sections = models.Section.objects.filter(faculty=faculty)
-            faculty_slots = faculty_sections.values_list("time_slot").order_by("classroom")
-            faculty_slots = models.ClassSlot.objects.filter(pk__in = faculty_slots)
-            print(faculty_slots)
-            time_slot_serializer = serializers.ClassSlotSerializer(faculty_slots,many=True)
+            faculty_sections = models.Section.objects.filter(faculty=faculty).order_by("classroom")
+            time_slot_serializer = serializers.FacultySerializer(faculty_sections,many=True)
             return Response(time_slot_serializer.data)
         except models.Faculty.DoesNotExist:
             return Response({"message":"Faculty is not available in the database"})
@@ -418,7 +415,7 @@ class GetFacultyRoutine(APIView):
         try:
             faculty = models.Faculty.objects.get(user=request.user)
             faculty_sections = models.Section.objects.filter(faculty=faculty).order_by("time_slot")
-            faculty_section_serializer = serializers.SectionNewSerializer(faculty_sections,many=True)
+            faculty_section_serializer = serializers.SectionRoutineSerializer(faculty_sections,many=True)
             return Response(faculty_section_serializer.data)
         except models.Faculty.DoesNotExist:
             return Response({"message":"Faculty is not available in the database"})
