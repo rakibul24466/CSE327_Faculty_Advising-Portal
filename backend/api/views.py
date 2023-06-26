@@ -108,9 +108,7 @@ class CourseCreateAPIView(APIView):
 
 
 
-class GetAllCourseAPIView(APIView):
-    
-    
+class GetAllCourseFacultyAPIView(APIView):
     #get all courses using GET request
     def get(self, request):
                 try:
@@ -120,10 +118,16 @@ class GetAllCourseAPIView(APIView):
                         serializer = serializers.SectionSerializer(sections,many=True)
                         return Response( serializer.data)
                 except models.Faculty.DoesNotExist:
+                    return Response({"Messsage":"User must be a faculty here"})
+                
+
+class GetAllCourseAPIView(APIView):
+    #get all courses using GET request
+    def get(self, request):
                     course = models.Course.objects.all()
                     serializer = serializers.CourseSerializer(course,many=True)
                     return Response( serializer.data)
-                
+
     #get course by course code using POST request   
     def post(self, request):
         code = request.data['code']
@@ -148,8 +152,6 @@ class GetAllCourseAPIView(APIView):
 class GetAllFacultyAPIView(APIView):
     authentication_classes = (authentication.TokenAuthentication,)
 
-    
-    
     #get all faculties using GET request
     def get(self, request):
         try:
