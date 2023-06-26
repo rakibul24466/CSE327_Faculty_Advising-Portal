@@ -15,16 +15,32 @@ class FacultySerializer(serializers.ModelSerializer):
         model = models.Faculty
         fields = '__all__'
 
+
+class FacultyRoutineSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Faculty
+        fields = ["name","designation"]
+
 class ClassroomSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Classroom
         fields = '__all__'
+        
+class ClassroomRoutineSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Classroom
+        fields = ["roomNo","seat"]
 
 
 class ClassSlotSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.ClassSlot
         fields = '__all__'
+        
+class ClassSlotRoutineSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.ClassSlot
+        fields = ['name']
 
 class CourseSerializer(serializers.ModelSerializer):
 
@@ -32,6 +48,11 @@ class CourseSerializer(serializers.ModelSerializer):
         model = models.Course
         fields = '__all__'
         
+class CourseRoutineSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = models.Course
+        fields = ['name','code','credit','type']
 
 class RegistrationSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
@@ -84,9 +105,24 @@ class SectionSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Section
         fields = '__all__'
-        
 
-    # def to_representation(self, instance):
-    #     ret = super().to_representation(instance)
-        
-    #     return ret
+
+class SectionNewSerializer(serializers.ModelSerializer):
+    course = CourseSerializer( read_only=True)
+    classroom = ClassroomSerializer(read_only=True)
+    
+    
+    class Meta:
+        model = models.Section
+        fields = '__all__'
+
+class SectionRoutineSerializer(serializers.ModelSerializer):
+    faculty = FacultyRoutineSerializer(read_only=True)
+    course = CourseRoutineSerializer( read_only=True)
+    time_slot = ClassSlotRoutineSerializer(read_only=True)
+    classroom = ClassroomRoutineSerializer(read_only=True)
+    
+    class Meta:
+        model = models.Section
+        fields = '__all__'
+

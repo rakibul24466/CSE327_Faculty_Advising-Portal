@@ -13,3 +13,5 @@ pip install django-extensions
 pip install pyparsing pydot
 #command
 python manage.py graph_models api  --pygraphviz -o my_project_visualized.png
+#For Class Diagram
+pip install pylint

@@ -296,7 +296,7 @@ class TakeCourseAPIView(APIView):
             
             try:
                 old_faculty  = models.Faculty.objects.get(initial = section.faculty)
-                # if old_faculty.initial !="TBA":
+                # if old_facult y.initial !="TBA":
                 #     return Response({"message":"Already {} taking the section".format(old_faculty)})
                 # elif time_slot in faculty_slots:
                 #     return Response({"message":"Time clashes with another course {} taking the section".format(old_faculty)})
@@ -307,7 +307,7 @@ class TakeCourseAPIView(APIView):
             except models.Faculty.DoesNotExist:
                 pass
             if time_slot.available == False:
-                return Response({"message":"Time slot is occupied"})
+                return Response({"message":"Time slot already occupied"})
 
 
             if time_slot.available != section.time_slot.available:
@@ -418,7 +418,18 @@ class GetFacultyRoutine(APIView):
         try:
             faculty = models.Faculty.objects.get(user=request.user)
             faculty_sections = models.Section.objects.filter(faculty=faculty).order_by("time_slot")
-            faculty_section_serializer = serializers.SectionSerializer(faculty_sections,many=True)
+            faculty_section_serializer = serializers.SectionNewSerializer(faculty_sections,many=True)
             return Response(faculty_section_serializer.data)
+        except models.Faculty.DoesNotExist:
+            return Response({"message":"Faculty is not available in the database"})
+
+class GetAdminRoutine(APIView):
+    authentication_classes = (authentication.TokenAuthentication,)
+
+    def get(self,request):
+        try:
+            course = models.Section.objects.all()
+            section_serializer = serializers.SectionRoutineSerializer(course,many=True)
+            return Response(section_serializer.data)
         except models.Faculty.DoesNotExist:
             return Response({"message":"Faculty is not available in the database"})
