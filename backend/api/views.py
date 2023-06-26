@@ -110,14 +110,14 @@ class CourseCreateAPIView(APIView):
 
 class GetAllCourseAPIView(APIView):
     
-    # authentication_classes = (authentication.TokenAuthentication,)
-    permission_classes=[AllowAny]
+    authentication_classes = (authentication.TokenAuthentication,)
+    # permission_classes=[AllowAny]
     
     #get all courses using GET request
     def get(self, request):
         try:
-            faculty = models.Faculty.objects.filter(user=request.user)
-            if len(faculty)==1:
+            faculty = models.Faculty.objects.get(user=request.user)
+            if (faculty):
                 sections = models.Section.objects.filter(faculty=faculty) 
                 serializer = serializers.SectionSerializer(sections,many=True)
                 return Response( serializer.data)
