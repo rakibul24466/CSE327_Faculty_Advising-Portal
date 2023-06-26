@@ -290,16 +290,20 @@ class TakeCourseAPIView(APIView):
             course = models.Course.objects.get(code = request.data['course_code'])
             section = models.Section.objects.get(course = course, no = int(request.data["section_no"]))
             
+            faculty_sections = models.Section.objects.filter(faculty=faculty)
+            faculty_slots = faculty_sections.values_list("time_slot").order_by("classroom")
+            faculty_slots = models.ClassSlot.objects.filter(pk__in = faculty_slots)
+            
             try:
                 old_faculty  = models.Faculty.objects.get(initial = section.faculty)
-                if old_faculty.initial !="TBA" and old_faculty!= faculty.initial:
-                    return Response({"message":"Already {} taking the section".format(old_faculty)})
-                # elif time_slot in :
-                #     pass
-                else:
-                    faculty.total_credit = faculty.total_credit  + course.credit
-                    if faculty.total_credit > 11:
-                        return Response({"message":"Faculty can not take more than 11 credits"})
+                # if old_faculty.initial !="TBA":
+                #     return Response({"message":"Already {} taking the section".format(old_faculty)})
+                # elif time_slot in faculty_slots:
+                #     return Response({"message":"Time clashes with another course {} taking the section".format(old_faculty)})
+                # else:
+                faculty.total_credit = faculty.total_credit  + course.credit
+                if faculty.total_credit > 11:
+                    return Response({"message":"Faculty can not take more than 11 credits"})
             except models.Faculty.DoesNotExist:
                 pass
             if time_slot.available == False:
