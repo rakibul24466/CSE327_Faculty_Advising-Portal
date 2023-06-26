@@ -124,9 +124,9 @@ class GetAllCourseFacultyAPIView(APIView):
 class GetAllCourseAPIView(APIView):
     #get all courses using GET request
     def get(self, request):
-                    course = models.Course.objects.all()
-                    serializer = serializers.CourseSerializer(course,many=True)
-                    return Response( serializer.data)
+            course = models.Course.objects.all()
+            serializer = serializers.CourseSerializer(course,many=True)
+            return Response( serializer.data)
 
     #get course by course code using POST request   
     def post(self, request):
