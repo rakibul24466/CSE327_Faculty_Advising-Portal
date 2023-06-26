@@ -111,18 +111,25 @@ class CourseCreateAPIView(APIView):
 class GetAllCourseAPIView(APIView):
     
     authentication_classes = (authentication.TokenAuthentication,)
-    # permission_classes=[AllowAny]
     
     
     #get all courses using GET request
     def get(self, request):
         try:
-            course = models.Course.objects.all()
-            serializer = serializers.CourseSerializer(course,many=True)
-            return Response( serializer.data)
+            faculty = models.Faculty.objects.filter(user=request.user)[0]
+            print(models.Faculty.objects.filter(user=request.user))
+            if faculty:
+                print("SS")
+                sections = models.Section.objects.filter(faculty=faculty)
+                serializer = serializers.SectionSerializer(sections,many=True)
+                return Response( serializer.data)
+            else:
+                course = models.Course.objects.all()
+                serializer = serializers.CourseSerializer(course,many=True)
+                return Response( serializer.data)
         except models.Course.DoesNotExist:
             return Response({'message': 'course list is empty or Cannot connect the database.'})
-      
+    
     #get course by course code using POST request   
     def post(self, request):
         code = request.data['code']
@@ -143,8 +150,7 @@ class GetAllCourseAPIView(APIView):
             return Response({'message': str(code )+' has not been offered this semester'})
         except models.Faculty.DoesNotExist:
             return Response({'message': 'Faculty has not been taking courses this semester'})
-        
-        
+
 class GetAllFacultyAPIView(APIView):
     authentication_classes = (authentication.TokenAuthentication,)
 
