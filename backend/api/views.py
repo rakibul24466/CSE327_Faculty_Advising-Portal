@@ -109,6 +109,7 @@ class CourseCreateAPIView(APIView):
 
 
 class GetAllCourseFacultyAPIView(APIView):
+    authentication_classes = (authentication.TokenAuthentication,)
     #get all courses using GET request
     def get(self, request):
                 try:
@@ -122,6 +123,7 @@ class GetAllCourseFacultyAPIView(APIView):
                 
 
 class GetAllCourseAPIView(APIView):
+    authentication_classes = (authentication.TokenAuthentication,)
     #get all courses using GET request
     def get(self, request):
                     course = models.Course.objects.all()
@@ -396,11 +398,13 @@ class GetFacultyTimeslot(APIView):
     def post(self,request):
         try:
             faculty = models.Faculty.objects.get(user=request.user)
-            print(request.user)
+            # print(request.user)
             faculty_sections = models.Section.objects.filter(faculty=faculty)
-            print(faculty_sections)
+            # print(faculty_sections)
             faculty_slots = faculty_sections.values_list("time_slot").order_by("classroom")
-            print(faculty_slots)
+            print("values list",faculty_slots)
+            faculty_slots = models.ClassSlot.objects.all()
+            print(faculty_slots[0])
             time_slot_serializer = serializers.ClassSlotSerializer(faculty_slots,many=True)
             return Response(time_slot_serializer.data)
         except models.Faculty.DoesNotExist:
