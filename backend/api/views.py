@@ -116,11 +116,9 @@ class GetAllCourseAPIView(APIView):
     #get all courses using GET request
     def get(self, request):
         try:
-            faculty = models.Faculty.objects.filter(user=request.user)[0]
-            print(models.Faculty.objects.filter(user=request.user))
-            if faculty:
-                print("SS")
-                sections = models.Section.objects.filter(faculty=faculty)
+            faculty = models.Faculty.objects.filter(user=request.user)
+            if len(faculty)==1:
+                sections = models.Section.objects.filter(faculty=faculty) 
                 serializer = serializers.SectionSerializer(sections,many=True)
                 return Response( serializer.data)
             else:
