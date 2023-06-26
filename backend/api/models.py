@@ -97,6 +97,7 @@ class Course(models.Model):
                     raise ValidationError(" Section number cannot be reduced at the moment.")
             super(Course, self).save(*args, **kwargs) # Call the real save() method
             ## random available class_slot
+            section = Section.objects.filter()
             class_slot = ClassSlot.objects.filter(available=True)[:self.number_of_section]
             classroom = class_slot.values_list('classroom', flat=True)
             print(class_slot[0].available)
@@ -120,7 +121,7 @@ class Section(models.Model):
     no = models.IntegerField(_("Section no"),blank=True)
     course = models.ForeignKey("Course", verbose_name=_("Course Name"), on_delete=models.CASCADE,blank=True)
     faculty = models.ForeignKey("Faculty", verbose_name=_("Faculty taking the class"), on_delete=models.CASCADE,blank=True)
-    time_slot = models.OneToOneField("ClassSlot", verbose_name=_("Class slot"), on_delete=models.CASCADE,blank=True)
+    time_slot = models.ForeignKey("ClassSlot", verbose_name=_("Class slot"), on_delete=models.CASCADE,blank=True)
     classroom = models.ForeignKey("Classroom", verbose_name=_("Classroom"), on_delete=models.CASCADE,blank=True)
     
     class Meta:

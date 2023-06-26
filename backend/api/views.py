@@ -109,6 +109,7 @@ class CourseCreateAPIView(APIView):
 
 
 class GetAllCourseFacultyAPIView(APIView):
+    authentication_classes = (authentication.TokenAuthentication,)
     #get all courses using GET request
     def get(self, request):
                 try:
@@ -122,6 +123,7 @@ class GetAllCourseFacultyAPIView(APIView):
                 
 
 class GetAllCourseAPIView(APIView):
+    authentication_classes = (authentication.TokenAuthentication,)
     #get all courses using GET request
     def get(self, request):
             course = models.Course.objects.all()
@@ -292,8 +294,8 @@ class TakeCourseAPIView(APIView):
                 old_faculty  = models.Faculty.objects.get(initial = section.faculty)
                 if old_faculty.initial !="TBA" and old_faculty!= faculty.initial:
                     return Response({"message":"Already {} taking the section".format(old_faculty)})
-                elif time_slot in " ":
-                    pass
+                # elif time_slot in " ":
+                #     pass
                 else:
                     faculty.total_credit = faculty.total_credit  + course.credit
                     if faculty.total_credit > 11:
@@ -396,12 +398,22 @@ class GetFacultyTimeslot(APIView):
     def post(self,request):
         try:
             faculty = models.Faculty.objects.get(user=request.user)
-            print(request.user)
             faculty_sections = models.Section.objects.filter(faculty=faculty)
-            print(faculty_sections)
             faculty_slots = faculty_sections.values_list("time_slot").order_by("classroom")
-            print(faculty_slots)
+            faculty_slots = models.ClassSlot.objects.filter(pk__in = faculty_slots)
             time_slot_serializer = serializers.ClassSlotSerializer(faculty_slots,many=True)
             return Response(time_slot_serializer.data)
+        except models.Faculty.DoesNotExist:
+            return Response({"message":"Faculty is not available in the database"})
+
+class GetFacultyRoutine(APIView):
+    authentication_classes = (authentication.TokenAuthentication,)
+
+    def get(self,request):
+        try:
+            faculty = models.Faculty.objects.get(user=request.user)
+            faculty_sections = models.Section.objects.filter(faculty=faculty).order_by("time_slot")
+            faculty_section_serializer = serializers.SectionSerializer(faculty_sections,many=True)
+            return Response(faculty_section_serializer.data)
         except models.Faculty.DoesNotExist:
             return Response({"message":"Faculty is not available in the database"})
