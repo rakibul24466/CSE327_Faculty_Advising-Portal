@@ -102,8 +102,7 @@ class Course(models.Model):
             print(class_slot[0].available)
             for i,j,k in zip(range(1,self.number_of_section+1),class_slot,classroom):
                 Section(no=i,course=self,faculty=faculty,time_slot=j,classroom=Classroom.objects.get(pk=k)).save()
-                j.available = False
-                j.save()
+
        except Faculty.DoesNotExist:
             raise ValidationError(" TBA has not been created yet.")
        except IntegrityError as e :
